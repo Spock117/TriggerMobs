@@ -1,0 +1,21 @@
+{
+  "death.attack.bullet": "%1$s was shot",
+  "death.attack.bullet.player": "%1$s was shot by %2$s",
+  "death.attack.bullet.item": "%1$s was shot by %2$s using %3$s",
+  "death.attack.ntgl.bullet.killed": "%1$s was killed",
+  "death.attack.ntgl.bullet.killed.player": "%1$s was killed by %2$s",
+  "death.attack.ntgl.bullet.killed.item": "%1$s was killed by %2$s using %3$s",
+  "death.attack.ntgl.bullet.eliminated": "%1$s was eliminated",
+  "death.attack.ntgl.bullet.eliminated.player": "%1$s was eliminated by %2$s",
+  "death.attack.ntgl.bullet.eliminated.item": "%1$s was eliminated by %2$s using %3$s",
+  "death.attack.ntgl.bullet.executed": "%1$s was executed",
+  "death.attack.ntgl.bullet.executed.player": "%1$s was executed by %2$s",
+  "death.attack.ntgl.bullet.executed.item": "%1$s was executed by %2$s using %3$s",
+  "death.attack.ntgl.bullet.annihilated": "%1$s was annihilated",
+  "death.attack.ntgl.bullet.annihilated.player": "%1$s was annihilated by %2$s",
+  "death.attack.ntgl.bullet.annihilated.item": "%1$s was annihilated by %2$s using %3$s",
+  "death.attack.ntgl.bullet.decimated": "%1$s was decimated",
+  "death.attack.ntgl.bullet.decimated.player": "%1$s was decimated by %2$s",
+  "death.attack.ntgl.bullet.decimated.item": "%1$s was decimated by %2$s using %3$s"
+}
+

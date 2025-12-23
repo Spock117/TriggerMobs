@@ -1,0 +1,7 @@
+plugins {
+    id 'root'
+    id 'xyz.wagyourtail.unimined' version '1.4.1-SNAPSHOT' apply false
+    id 'xyz.wagyourtail.jvmdowngrader' version '1.3.0'
+    // Forgix removed - only building for Forge, no need to merge loaders
+    // Manifold removed - not used in this project
+}

@@ -1,0 +1,32 @@
+plugins {
+    id 'unimined-forge' // <-- Go here for Forge mixin configuration (CTRL+Left Click)
+}
+
+repositories {
+    // Local libs folder for NTGL jar (for development)
+    flatDir {
+        dirs '../common/libs'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    // NTGL dependency - expects jar in common/libs/ folder
+    // At runtime, NTGL must be in the mods folder
+    
+    // Try to find NTGL jar in common/libs folder
+    def libsDir = file('../common/libs')
+    def ntglJars = fileTree(dir: libsDir, include: 'ntgl-*.jar').files.findAll { 
+        !it.name.contains('-sources') && !it.name.contains('-javadoc') 
+    }
+    
+    if (!ntglJars.isEmpty()) {
+        // Use file dependency if jar exists in libs
+        def ntglJar = ntglJars.first()
+        implementation files(ntglJar)
+        println "Using NTGL from: ${ntglJar}"
+    } else {
+        // Fallback to flatDir repository
+        implementation fg.deobf("com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.20.1-3.0.4'}")
+    }
+}
