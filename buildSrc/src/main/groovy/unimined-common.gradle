@@ -1,9 +1,0 @@
-plugins {
-    id 'minecraft'
-}
-
-unimined.minecraft {
-    // Forge-only build - no fabric/neoforge support
-    defaultRemapJar = false
-    runs.off = true
-}

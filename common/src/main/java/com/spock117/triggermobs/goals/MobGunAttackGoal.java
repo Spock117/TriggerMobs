@@ -6,8 +6,11 @@ import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
 import com.nukateam.ntgl.common.network.ServerPlayHandler;
 import com.nukateam.ntgl.common.network.message.C2SMessageShoot;
 import com.nukateam.ntgl.common.util.trackers.EntityReloadTracker;
+import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
 import com.spock117.triggermobs.TriggerMobs;
+import com.spock117.triggermobs.ai.WeaponAIStrategy;
+import com.spock117.triggermobs.ai.WeaponStrategyFactory;
 import com.spock117.triggermobs.util.InaccuracyHelper;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -36,6 +39,10 @@ public class MobGunAttackGoal extends Goal {
     private boolean useMainHand = true; // For dual wielding: alternate between hands
     private boolean isDualWielding = false;
     
+    // Strategy pattern: current weapon AI strategy
+    private WeaponAIStrategy currentStrategy;
+    private ItemStack lastWeaponStack = ItemStack.EMPTY; // Track weapon changes
+    
     public MobGunAttackGoal(PathfinderMob mob, double speedModifier, float attackRadius) {
         this.mob = mob;
         this.speedModifier = speedModifier;
@@ -45,6 +52,8 @@ public class MobGunAttackGoal extends Goal {
         // Initialize attack delay to prevent immediate first shot
         // Use a small random delay to stagger initial attacks
         this.attackDelay = 10 + mob.getRandom().nextInt(20); // 0.5-1.5 seconds initial delay
+        // Initialize with generic strategy
+        this.currentStrategy = new com.spock117.triggermobs.ai.strategies.GenericWeaponStrategy();
     }
 
     @Override
@@ -79,8 +88,13 @@ public class MobGunAttackGoal extends Goal {
 
     @Override
     public void tick() {
+        // Safety check: ensure mob and level are valid
+        if (mob == null || !mob.isAlive() || mob.level() == null) {
+            return;
+        }
+        
         var target = this.mob.getTarget();
-        if (target == null) {
+        if (target == null || !target.isAlive()) {
             return;
         }
 
@@ -103,15 +117,82 @@ public class MobGunAttackGoal extends Goal {
 
         double distance = this.mob.distanceTo(target);
         double distanceSqr = this.mob.distanceToSqr(target);
-        boolean isInRange = distanceSqr <= attackRadiusSqr;
         
         // Check if mob has gun with ammo (determines if we should control movement)
         ItemStack mainHandWeapon = mob.getMainHandItem();
         ItemStack offHandWeapon = mob.getOffhandItem();
         boolean hasMainGun = mainHandWeapon.getItem() instanceof IWeapon;
         boolean hasOffGun = offHandWeapon.getItem() instanceof IWeapon;
-        boolean hasGunWithAmmo = false;
         
+        // Determine which weapon to use and detect weapon changes
+        InteractionHand handToUse = null;
+        ItemStack weaponToUse = null;
+        
+        if (hasMainGun && hasOffGun) {
+            // Dual wielding: check if both weapons can be dual wielded
+            WeaponData mainData = new WeaponData(mainHandWeapon, mob);
+            WeaponData offData = new WeaponData(offHandWeapon, mob);
+            boolean mainCanDual = WeaponModifierHelper.isOneHanded(mainData);
+            boolean offCanDual = WeaponModifierHelper.isOneHanded(offData);
+            
+            if (mainCanDual && offCanDual) {
+                // Both can dual wield
+                isDualWielding = true;
+                if (useMainHand) {
+                    handToUse = InteractionHand.MAIN_HAND;
+                    weaponToUse = mainHandWeapon;
+                } else {
+                    handToUse = InteractionHand.OFF_HAND;
+                    weaponToUse = offHandWeapon;
+                }
+            } else {
+                // Can't dual wield, use main hand
+                isDualWielding = false;
+                handToUse = InteractionHand.MAIN_HAND;
+                weaponToUse = mainHandWeapon;
+            }
+        } else if (hasMainGun) {
+            isDualWielding = false;
+            handToUse = InteractionHand.MAIN_HAND;
+            weaponToUse = mainHandWeapon;
+        } else if (hasOffGun) {
+            isDualWielding = false;
+            handToUse = InteractionHand.OFF_HAND;
+            weaponToUse = offHandWeapon;
+        } else {
+            return; // No weapon in either hand
+        }
+        
+        // Detect weapon changes and switch strategy if needed
+        if (weaponToUse != null && !weaponToUse.isEmpty()) {
+            // Check if weapon changed
+            boolean weaponChanged = !ItemStack.isSameItem(weaponToUse, lastWeaponStack);
+            
+            if (weaponChanged) {
+                // Always switch strategy when weapon changes (strategy will handle ammo checks)
+                currentStrategy = WeaponStrategyFactory.createStrategy(weaponToUse);
+                if (currentStrategy == null) {
+                    // Fallback to generic if factory returns null
+                    currentStrategy = new com.spock117.triggermobs.ai.strategies.GenericWeaponStrategy();
+                }
+                lastWeaponStack = weaponToUse.copy();
+            }
+        }
+        
+        // Ensure strategy is never null
+        if (currentStrategy == null) {
+            currentStrategy = new com.spock117.triggermobs.ai.strategies.GenericWeaponStrategy();
+        }
+        
+        // Update dual wielding capability based on strategy
+        if (isDualWielding && !currentStrategy.canDualWield()) {
+            // Strategy doesn't support dual wielding, use main hand only
+            isDualWielding = false;
+            handToUse = InteractionHand.MAIN_HAND;
+            weaponToUse = mainHandWeapon;
+        }
+        
+        boolean hasGunWithAmmo = false;
         if (hasMainGun && WeaponStateHelper.hasAmmo(mainHandWeapon)) {
             hasGunWithAmmo = true;
         } else if (hasOffGun && WeaponStateHelper.hasAmmo(offHandWeapon)) {
@@ -120,72 +201,19 @@ public class MobGunAttackGoal extends Goal {
         
         boolean canReload = !EntityReloadTracker.isReloading(mob);
         
-        // Movement logic - only override when we have gun with ammo and can reload
-        // Otherwise, let default behavior handle it (don't interfere)
-        if (hasGunWithAmmo && canReload) {
-            // Has gun with ammo: control movement to maintain distance
-            if (isInRange && this.seeTime >= 5) {
-                // In range: stop navigation and strafe
-                this.mob.getNavigation().stop();
+        // Use strategy's ideal distance for range calculation
+        float strategyMaxDistance = currentStrategy.getMaxDistance();
+        float strategyMaxDistanceSqr = strategyMaxDistance * strategyMaxDistance;
+        boolean isInRange = distanceSqr <= strategyMaxDistanceSqr;
                 
-                // Strafe speed - use much smaller values to avoid teleporting
-                // These values are movement inputs, not speeds - they get multiplied by movement attribute
-                float strafeSpeed = 0.1F; // Reduced from 0.5F - much slower strafing
-                
-                // If too close (< 10 blocks), back away; otherwise move forward slightly
-                float forwardSpeed = distance < 10.0 ? -strafeSpeed : strafeSpeed;
-                
-                // Sideways strafe
-                float sideSpeed = strafeLeft ? -strafeSpeed : strafeSpeed;
-                
-                // Use direct movement control - do NOT call setSpeed() as it's for navigation
-                // setZza and setXxa are movement inputs (0.0 to 1.0), they get processed by MoveControl
-                // Using very small values to prevent excessive speed
-                this.mob.setZza(forwardSpeed);
-                this.mob.setXxa(sideSpeed);
-            } else {
-                // Out of range: move towards target using navigation
-                --this.updatePathDelay;
-                if (this.updatePathDelay <= 0) {
-                    this.mob.getNavigation().moveTo(target, this.speedModifier);
-                    this.updatePathDelay = PATHFINDING_DELAY_RANGE.sample(this.mob.getRandom());
-                }
-            }
-        }
-        // If no gun with ammo or can't reload: don't interfere with movement
-        // Let other goals (like melee attack) handle movement naturally
+        // Delegate movement to strategy
+        currentStrategy.move(mob, target, distance, distanceSqr, hasGunWithAmmo, canReload, hasLineOfSight, seeTime);
 
         // Look at target
         this.mob.getLookControl().setLookAt(target, 60.0F, 60.0F);
         
         // Don't sprint while aiming
         this.mob.setSprinting(false);
-
-        // Dual wielding support: check both hands (already checked above, reuse)
-        isDualWielding = hasMainGun && hasOffGun;
-        
-        // If dual wielding, alternate between hands
-        InteractionHand handToUse = null;
-        ItemStack weaponToUse = null;
-        
-        if (isDualWielding) {
-            // Dual wielding: alternate between hands
-            if (useMainHand) {
-                handToUse = InteractionHand.MAIN_HAND;
-                weaponToUse = mainHandWeapon;
-            } else {
-                handToUse = InteractionHand.OFF_HAND;
-                weaponToUse = offHandWeapon;
-            }
-        } else if (hasMainGun) {
-            handToUse = InteractionHand.MAIN_HAND;
-            weaponToUse = mainHandWeapon;
-        } else if (hasOffGun) {
-            handToUse = InteractionHand.OFF_HAND;
-            weaponToUse = offHandWeapon;
-        } else {
-            return; // No weapon in either hand
-        }
 
         HumanoidArm arm = handToUse == InteractionHand.MAIN_HAND ? HumanoidArm.RIGHT : HumanoidArm.LEFT;
 
@@ -219,36 +247,42 @@ public class MobGunAttackGoal extends Goal {
 
         // Attack logic
         if (isInRange && this.seeTime >= 5 && attackDelay <= 0) {
-            shoot(target, handToUse);
+            // Delegate shooting to strategy
+            currentStrategy.shoot(mob, target, handToUse, weaponToUse);
             
-            // Calculate attack interval: configurable base, halved for dual wielding, with randomization
-            // Use config values with fallback to defaults
-            int baseIntervalTicks = TriggerMobs.baseAttackIntervalTicks;
-            int varianceTicks = TriggerMobs.attackIntervalVariance;
+            // Calculate attack delay using strategy
+            WeaponData weaponData = new WeaponData(weaponToUse, mob);
+            int calculatedDelay = currentStrategy.getAttackDelay(mob, weaponData);
             
-            // Defensive check: ensure we have valid values (should have been validated during config load)
-            if (baseIntervalTicks <= 0 || baseIntervalTicks < 20) {
-                TriggerMobs.LOGGER.warn("Invalid baseAttackIntervalTicks value {} detected in MobGunAttackGoal, using default 200", baseIntervalTicks);
-                baseIntervalTicks = 200;
-            }
-            if (varianceTicks < 0) {
-                TriggerMobs.LOGGER.warn("Invalid attackIntervalVariance value {} detected in MobGunAttackGoal, using default 80", varianceTicks);
-                varianceTicks = 80;
+            // For dual wielding, halve the delay
+            if (isDualWielding) {
+                calculatedDelay = calculatedDelay / 2;
             }
             
-            int baseInterval = isDualWielding ? baseIntervalTicks / 2 : baseIntervalTicks;
-            // Add randomization: ±variance ticks
-            int randomOffset = mob.getRandom().nextInt(varianceTicks * 2 + 1) - varianceTicks;
-            int calculatedDelay = baseInterval + randomOffset;
-            attackDelay = Math.max(20, calculatedDelay); // Ensure at least 20 ticks (1 second) minimum
+            attackDelay = Math.max(1, calculatedDelay); // Ensure at least 1 tick minimum
             
-            // Log if delay seems unusually low (for debugging)
-            if (attackDelay < 40) {
-                TriggerMobs.LOGGER.debug("Mob {} calculated attack delay: {} ticks (baseInterval: {}, variance: {}, isDualWielding: {})", 
-                    mob.getDisplayName().getString(), attackDelay, baseIntervalTicks, varianceTicks, isDualWielding);
+            // Update strafe cooldown (if strategy supports it)
+            if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.GenericWeaponStrategy genericStrategy) {
+                genericStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.FlintlockStrategy flintlockStrategy) {
+                flintlockStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.RevolverStrategy revolverStrategy) {
+                revolverStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.ShotgunStrategy shotgunStrategy) {
+                shotgunStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.NailgunStrategy nailgunStrategy) {
+                nailgunStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.GatlingStrategy gatlingStrategy) {
+                gatlingStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.BlazegunStrategy blazegunStrategy) {
+                blazegunStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.LauncherStrategy launcherStrategy) {
+                launcherStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.HammerStrategy hammerStrategy) {
+                hammerStrategy.updateStrafeCooldown(mob);
+            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.GrenadeStrategy grenadeStrategy) {
+                grenadeStrategy.updateStrafeCooldown(mob);
             }
-            
-            strafeCooldown = 20 + mob.getRandom().nextInt(20); // Change strafe direction periodically
             
             // Alternate hands for dual wielding
             if (isDualWielding) {
@@ -261,40 +295,7 @@ public class MobGunAttackGoal extends Goal {
         }
     }
 
-    private void shoot(LivingEntity target, InteractionHand hand) {
-        // Calculate base rotation
-        float yaw = mob.getViewYRot(1.0F);
-        float pitch = mob.getViewXRot(1.0F);
-
-        // Add inaccuracy (moderate level)
-        float pitchOffset = InaccuracyHelper.getPitchOffset(mob.getRandom());
-        float yawOffset = InaccuracyHelper.getYawOffset(mob.getRandom());
-
-        // Apply inaccuracy to rotation
-        float finalYaw = yaw + yawOffset;
-        float finalPitch = pitch + pitchOffset;
-
-        // Create shoot message
-        var msg = new C2SMessageShoot(
-                mob.getId(),
-                finalYaw,
-                finalPitch,
-                pitchOffset, // randP
-                yawOffset,   // randY
-                hand,
-                WeaponMode.PRIMARY
-        );
-
-        try {
-            // Handle shoot directly (for mobs, we bypass the network layer)
-            ServerPlayHandler.handleShoot(msg, mob);
-        } catch (Exception e) {
-            // Silently handle errors
-        }
-        
-        // Swing hand for animation
-        mob.swing(hand);
-    }
+    // shoot() method removed - now delegated to strategy
     
     @Override
     public void start() {
@@ -310,6 +311,7 @@ public class MobGunAttackGoal extends Goal {
         this.seeTime = 0;
         this.attackDelay = 0;
         this.strafeCooldown = 0;
+        this.lastWeaponStack = ItemStack.EMPTY;
     }
 }
 

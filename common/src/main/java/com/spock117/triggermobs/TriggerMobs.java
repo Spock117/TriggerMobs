@@ -10,6 +10,7 @@ public class TriggerMobs {
     // Config values (set from Forge side)
     public static int baseAttackIntervalTicks = 200; // Default: 10 seconds
     public static int attackIntervalVariance = 80; // Default: ±4 seconds
+    public static float tier1Probability = 0.125f; // Default: 12.5% (1/8) chance for accurate shots
 
     public static void init() {
         LOGGER.info("TriggerMobs mod initialized");

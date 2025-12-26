@@ -87,12 +87,18 @@ The mod includes run configurations. You can run directly from Gradle:
    - ✅ Mobs should have moderate inaccuracy (not perfect aim)
    - ✅ Mobs should strafe while shooting
    - ✅ All hostile mobs should work (zombies, pillagers, vindicators, etc.)
+   - ✅ **Smart Item Pickup (v1.1.0)**: Mobs should only pick up weapons/tools, drop other items
+   - ✅ **Dual-Wielding (v1.1.0)**: Mobs can dual-wield one-handed weapons when picking up compatible weapons
+   - ✅ **Create:Gunsmithing AI (v1.1.0)**: If Create:Gunsmithing is installed, mobs should use weapon-specific AI behaviors
 
 3. **Verify behavior:**
    - Mobs should stop and aim when in range
    - Mobs should shoot at targets
    - Mobs should reload automatically
    - Shots should have some spread/inaccuracy
+   - **Item Pickup (v1.1.0)**: Drop a non-weapon item near a mob - it should not pick it up. Drop a weapon - it should pick it up.
+   - **Dual-Wielding (v1.1.0)**: Give a mob a one-handed weapon, then drop another compatible one-handed weapon nearby - it should dual-wield.
+   - **Create:Gunsmithing (v1.1.0)**: If Create:Gunsmithing is installed, test different weapon types (flintlock, shotgun, gatling, etc.) to verify weapon-specific behaviors.
 
 ## Deployment
 
@@ -129,9 +135,10 @@ When distributing your mod:
 - Solution: Download or build NTGL and copy the jar to `common/libs/`
 - Ensure the jar is named `ntgl-*.jar` and is not a sources or javadoc variant
 
-**Error: Mixin errors**
+**Error: Forge event registration errors**
 - Solution: Ensure you're using the correct Minecraft/Forge version (1.20.1, Forge 47.4.0)
-- Check that mixin configuration is correct
+- Check that event handlers are properly annotated with `@SubscribeEvent`
+- Verify `@Mod.EventBusSubscriber` is correctly configured
 
 ### Runtime Errors
 
@@ -142,7 +149,13 @@ When distributing your mod:
 **Mobs don't use guns**
 - Verify the mob is holding an NTGL gun (IWeapon instance)
 - Check that the gun is in main hand or offhand
-- Verify the goal was added (check logs for mixin application)
+- Verify the goal was added (check logs for entity join events)
+- Ensure the mob is a Monster type (hostile mobs)
+
+**Mobs pick up non-weapon items (v1.1.0)**
+- This should not happen - mobs should only pick up weapons/tools
+- Check that TriggerMobsEvents.onLevelTick is running (check server logs)
+- Verify MobItemPickupHelper.isWeaponOrTool is working correctly
 
 **Mobs have perfect accuracy**
 - Check that InaccuracyHelper is working
@@ -151,9 +164,12 @@ When distributing your mod:
 ## Development Tips
 
 1. **Use the runClient task** for quick testing
-2. **Check the logs** for mixin application messages
+2. **Check the logs** for Forge event registration and execution
 3. **Use breakpoints** in MobGunAttackGoal to debug AI behavior
-4. **Test with different mob types** to ensure all hostile mobs work
+4. **Use breakpoints** in TriggerMobsEvents to debug item pickup behavior (v1.1.0)
+5. **Test with different mob types** to ensure all hostile mobs work
+6. **Test item pickup** by dropping various items near mobs to verify filtering works
+7. **Test dual-wielding** by giving mobs one-handed weapons and dropping compatible weapons nearby
 
 ## File Structure
 
@@ -161,9 +177,25 @@ When distributing your mod:
 triggermobs/
 ├── common/
 │   ├── libs/              # Place NTGL jar here for development
-│   └── src/main/java/...  # Mod source code
+│   └── src/main/java/...  # Shared mod source code
+│       ├── goals/         # AI goals (MobGunAttackGoal)
+│       └── util/          # Utility classes (InaccuracyHelper, MobItemPickupHelper)
 ├── forge/
+│   ├── src/main/java/...  # Forge-specific code
+│   │   └── events/        # Forge event handlers (TriggerMobsEvents) - v1.1.0
 │   └── build/libs/        # Built mod jar appears here
 └── build.gradle           # Root build file
 ```
+
+## Version 1.1.0 Changes
+
+### Architecture Changes
+- **Replaced Mixin system with Forge events** for mob item pickup behavior
+- Item pickup logic now handled in `TriggerMobsEvents.onLevelTick` event handler
+- More reliable and maintainable than the previous Mixin approach
+
+### New Features to Test
+- **Smart Item Pickup**: Mobs filter items and only pick up weapons/tools
+- **Dual-Wielding**: One-handed weapons can be dual-wielded
+- **Create:Gunsmithing Support**: Weapon-specific AI when Create:Gunsmithing is installed
 

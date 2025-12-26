@@ -72,8 +72,26 @@ public class TriggerMobsForge {
                 
                 TriggerMobs.baseAttackIntervalTicks = baseInterval;
                 TriggerMobs.attackIntervalVariance = variance;
-                TriggerMobs.LOGGER.info("TriggerMobs config loaded and applied: baseAttackIntervalTicks={}, attackIntervalVariance={}", 
-                    TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance);
+                
+                // Load accuracy config
+                if (TriggerMobsConfig.COMMON.tier1Probability != null) {
+                    double tier1Prob = TriggerMobsConfig.COMMON.tier1Probability.get();
+                    
+                    // Validate range (should already be validated by config, but defensive check)
+                    if (tier1Prob < 0.0 || tier1Prob > 1.0) {
+                        TriggerMobs.LOGGER.warn("tier1Probability value {} is out of range (0.0-1.0), using default 0.125", tier1Prob);
+                        tier1Prob = 0.125;
+                    }
+                    
+                    TriggerMobs.tier1Probability = (float) tier1Prob;
+                    TriggerMobs.LOGGER.info("TriggerMobs config loaded and applied: baseAttackIntervalTicks={}, attackIntervalVariance={}, tier1Probability={} (tier2Probability={})", 
+                        TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance, 
+                        TriggerMobs.tier1Probability, 1.0f - TriggerMobs.tier1Probability);
+                } else {
+                    TriggerMobs.tier1Probability = 0.125f; // Default
+                    TriggerMobs.LOGGER.info("TriggerMobs config loaded and applied: baseAttackIntervalTicks={}, attackIntervalVariance={}, tier1Probability={} (default)", 
+                        TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance, TriggerMobs.tier1Probability);
+                }
             } else {
                 throw new NullPointerException("Config not initialized - COMMON or baseAttackIntervalTicks is null");
             }
@@ -81,7 +99,8 @@ public class TriggerMobsForge {
             // Fallback to hardcoded defaults if config can't be read
             TriggerMobs.baseAttackIntervalTicks = 200;
             TriggerMobs.attackIntervalVariance = 80;
-            TriggerMobs.LOGGER.error("Failed to load TriggerMobs config, using defaults: baseAttackIntervalTicks=200, attackIntervalVariance=80. Error: {}", e.getMessage());
+            TriggerMobs.tier1Probability = 0.125f;
+            TriggerMobs.LOGGER.error("Failed to load TriggerMobs config, using defaults: baseAttackIntervalTicks=200, attackIntervalVariance=80, tier1Probability=0.125. Error: {}", e.getMessage());
             e.printStackTrace();
         }
     }

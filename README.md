@@ -1,6 +1,6 @@
 # TriggerMobs Mod
 
-A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy.
+A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Version 1.1.0 adds optional Create:Gunsmithing support with weapon-specific AI behaviors!
 
 ## Features
 
@@ -8,6 +8,9 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
 - ✅ **Universal Support** - All hostile mobs that can hold items can use guns
 - ✅ **Improved AI** - Strafing, better targeting, and movement behavior
 - ✅ **Moderate Inaccuracy** - Mobs have ±3-5 degree spread (not perfect aim)
+- ✅ **Smart Item Pickup** (v1.1.0) - Mobs only pick up weapons and tools, automatically dropping other items
+- ✅ **Dual-Wielding Support** (v1.1.0) - One-handed weapons can be dual-wielded when mobs pick up compatible weapons
+- ✅ **Optional Create:Gunsmithing Support** (v1.1.0) - Weapon-specific AI behaviors for Create:Gunsmithing weapons when installed
 
 ## Requirements
 
@@ -18,7 +21,7 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
   - **Create:Gunsmithing** - A popular NTGL gun pack
   - Any other mod that provides weapons using NTGL
 
-**Note:** This mod provides universal AI behavior for all NTGL weapons. There is no customized weapon-specific AI - all weapons use the same attack patterns and behavior.
+**Note:** This mod provides universal AI behavior for all NTGL weapons. When Create:Gunsmithing is installed, mobs will use specialized AI tailored to each weapon type (flintlock, revolver, shotgun, etc.). For other NTGL gun packs, all weapons use the same generic attack patterns and behavior.
 
 ## Quick Start
 
@@ -51,11 +54,15 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
 ## How It Works
 
 - All hostile mobs (zombies, pillagers, vindicators, evokers, witches, etc.) automatically get gun attack behavior
+- The mod automatically enables item pickup (`CanPickUpLoot`) for humanoid mobs so they can pick up weapons from the ground
+- **Smart Item Pickup** (v1.1.0): Mobs will only pick up weapons and tools, automatically dropping any other items they might be holding. This ensures mobs stay focused on combat.
+- **Dual-Wielding** (v1.1.0): When a mob picks up a second one-handed weapon, it can dual-wield compatible weapons (e.g., two flintlocks or two revolvers).
 - When a mob holds an NTGL gun (IWeapon), it will:
   - Use the gun to attack targets
   - Strafing while shooting
   - Auto-reload when ammo runs out
   - Have moderate inaccuracy for balanced gameplay
+  - Use weapon-specific AI when Create:Gunsmithing is installed (v1.1.0)
 
 ## Building
 
@@ -86,6 +93,25 @@ The project build files have been updated to remove Manifold. If you're building
 - **NTGL is required** - This mod will not work without NukaTeamGunLib installed
 - **Gun pack is required** - Add a gun pack that uses NTGL
 
+## Changelog
+
+### Version 1.1.0
+
+- **Optional Create:Gunsmithing Support**: Added weapon-specific AI behaviors for Create:Gunsmithing weapons
+  - Flintlock & Revolver: Medium-range combat with dual-wielding support
+  - Shotgun: Aggressive close-range combat with burst fire
+  - Nailgun: Sustained fire with high-capacity magazines
+  - Gatling Gun: Continuous suppression fire with minimal movement
+  - Blazegun: Close-medium range continuous fire
+  - Launcher: Long-range rocket attacks with distance management
+  - Pneumatic Hammer: Melee-focused aggressive combat
+  - Frag Grenade: Medium-range throwing behavior
+- **Smart Item Pickup System**: Mobs now only pick up weapons and tools, automatically dropping other items
+- **Dual-Wielding Support**: One-handed NTGL weapons can be dual-wielded when mobs pick up compatible weapons
+- **Technical Improvements**:
+  - Replaced Mixin-based system with Forge events for more reliable mob item pickup behavior
+  - More stable and maintainable codebase
+
 ## Development
 
 The mod structure:
@@ -93,8 +119,9 @@ The mod structure:
 - `forge/` - Forge-specific code
 - `common/src/main/java/com/spock117/triggermobs/` - Main mod code
   - `goals/` - AI goals (MobGunAttackGoal)
-  - `mixins/` - Mixin classes
-  - `util/` - Utility classes (InaccuracyHelper)
+  - `util/` - Utility classes (InaccuracyHelper, MobItemPickupHelper)
+- `forge/src/main/java/com/spock117/triggermobs/` - Forge-specific code
+  - `events/` - Forge event handlers (TriggerMobsEvents)
 
 ## License
 

@@ -16,6 +16,7 @@ public class TriggerMobsConfig {
     public static class Common {
         public final ForgeConfigSpec.IntValue baseAttackIntervalTicks;
         public final ForgeConfigSpec.IntValue attackIntervalVariance;
+        public final ForgeConfigSpec.DoubleValue tier1Probability;
         
         public Common(ForgeConfigSpec.Builder builder) {
             builder.comment("TriggerMobs mob attack configuration").push("mob_attack");
@@ -27,6 +28,14 @@ public class TriggerMobsConfig {
             this.attackIntervalVariance = builder
                 .comment("Random variance in ticks added to attack interval (±this value). Default: 80 ticks (±4 seconds)")
                 .defineInRange("attackIntervalVariance", 80, 0, 200);
+            
+            builder.pop();
+            
+            builder.comment("TriggerMobs accuracy configuration").push("accuracy");
+            
+            this.tier1Probability = builder
+                .comment("Probability of accurate shots (Tier 1: ±3-5 degrees). Range: 0.0 to 1.0. Default: 0.125 (12.5%). Tier 2 probability (less accurate: ±12-15 degrees) is automatically calculated as (1.0 - tier1Probability).")
+                .defineInRange("tier1Probability", 0.125, 0.0, 1.0);
             
             builder.pop();
         }

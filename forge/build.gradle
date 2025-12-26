@@ -1,32 +1,208 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://maven.parchmentmc.org' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.parchmentmc:librarian:1.+'
+    }
+}
+
 plugins {
-    id 'unimined-forge' // <-- Go here for Forge mixin configuration (CTRL+Left Click)
+    id 'eclipse'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '5.1.+'
+}
+
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
+
+version = "${minecraft_version}-${mod_version}"
+group = project.group
+base {
+    archivesName = "${mod_id}-forge"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+// Mixin configuration removed - using Forge events instead
+
+minecraft {
+    mappings channel: project.findProperty('mappings_channel') ?: 'parchment', 
+             version: project.findProperty('mappings_version') ?: '2023.09.03-1.20.1'
+    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', mod_id
+
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                    source project(':common').sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', mod_id
+
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                    source project(':common').sourceSets.main
+                }
+            }
+        }
+
+        gameTestServer {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', mod_id
+
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                    source project(':common').sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'mixin.env.disableRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                    source project(':common').sourceSets.main
+                }
+            }
+        }
+    }
 }
 
 repositories {
-    // Local libs folder for NTGL jar (for development)
+    mavenLocal()
+    maven {
+        url "https://www.cursemaven.com"
+    }
+    maven {
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
     flatDir {
         dirs '../common/libs'
     }
-    mavenCentral()
+    maven {
+        name = "Sponge"
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
+    }
 }
 
 dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // Common module dependency
+    implementation project(':common')
+
+    // Mixin Annotation Processor (required for MixinGradle)
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    testAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
     // NTGL dependency - expects jar in common/libs/ folder
     // At runtime, NTGL must be in the mods folder
+    // Note: Using files() dependency - ForgeGradle will warn about deobfuscation, but this is fine
+    // if NTGL is already deobfuscated (which mod JARs typically are)
     
-    // Try to find NTGL jar in common/libs folder
     def libsDir = file('../common/libs')
     def ntglJars = fileTree(dir: libsDir, include: 'ntgl-*.jar').files.findAll { 
         !it.name.contains('-sources') && !it.name.contains('-javadoc') 
     }
     
     if (!ntglJars.isEmpty()) {
-        // Use file dependency if jar exists in libs
+        // Use file dependency - warning about deobfuscation is harmless if NTGL is already deobfuscated
         def ntglJar = ntglJars.first()
+        // Don't use fg.deobf() with files() - it causes warnings but works fine for deobfuscated mods
         implementation files(ntglJar)
         println "Using NTGL from: ${ntglJar}"
     } else {
-        // Fallback to flatDir repository
+        // Fallback to maven repository
         implementation fg.deobf("com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.20.1-3.0.4'}")
     }
+}
+
+// Process resources to expand properties
+tasks.named('processResources', ProcessResources).configure {
+    // Copy mixin config from common module first
+    from(project(':common').sourceSets.main.resources) {
+        include 'triggermobs.mixins.json'
+        include 'triggermobs.mixins-refmap.json'
+    }
+    
+    var replaceProperties = [
+        version: "${minecraft_version}-${mod_version}",
+        minecraft_version: minecraft_version,
+        mod_id: mod_id,
+        mod_name: mod_name,
+        mod_version: mod_version,
+        mod_authors: mod_authors,
+        mod_description: description,
+        license: license,
+        credits: project.findProperty('credits') ?: '',
+        java_version: '17'
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+jar {
+    // Include common module's classes in the forge JAR
+    from(project(':common').sourceSets.main.output) {
+        exclude 'META-INF/mods.toml' // Exclude common's mods.toml if it exists
+    }
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    manifest {
+        attributes([
+            "Specification-Title"     : mod_id,
+            "Specification-Vendor"    : mod_authors,
+            "Specification-Version"   : "1",
+            "Implementation-Title"    : project.name,
+            "Implementation-Version"  : project.jar.archiveVersion,
+            "Implementation-Vendor"   : mod_authors,
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
