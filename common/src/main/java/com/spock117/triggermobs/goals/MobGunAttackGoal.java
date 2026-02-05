@@ -19,7 +19,6 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.EnumSet;
@@ -300,14 +299,13 @@ public class MobGunAttackGoal extends Goal {
     @Override
     public void start() {
         super.start();
+        mob.setAggressive(true);
     }
     
     @Override
     public void stop() {
         super.stop();
-        if (mob instanceof Monster monster) {
-            monster.setAggressive(false);
-        }
+        mob.setAggressive(false);
         this.seeTime = 0;
         this.attackDelay = 0;
         this.strafeCooldown = 0;

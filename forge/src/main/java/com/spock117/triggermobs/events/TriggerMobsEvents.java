@@ -5,9 +5,11 @@ import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
 import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.spock117.triggermobs.TriggerMobs;
 import com.spock117.triggermobs.goals.MobGunAttackGoal;
+import com.spock117.triggermobs.util.ModDetectionHelper;
 import com.spock117.triggermobs.util.MobItemPickupHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
@@ -41,9 +43,10 @@ public class TriggerMobsEvents {
         "minecraft:villager",
         "minecraft:piglin",
         "minecraft:piglin_brute",
-        "minecraft:zombified_piglin"
+        "minecraft:zombified_piglin",
+        "guardvillagers:guard"
     );
-    
+
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         // Only handle on server side (works in both single-player and multiplayer)
@@ -66,6 +69,17 @@ public class TriggerMobsEvents {
             try {
                 MobGunAttackGoal goal = new MobGunAttackGoal(monster, 0.6D, 16.0F); // Reduced speed: 0.6 instead of 1.0
                 monster.goalSelector.addGoal(3, goal);
+            } catch (Exception e) {
+                // Silently handle errors
+            }
+        }
+
+        // Guard Villagers: when mod is loaded, add gun goal to guards (priority 2 so it runs before melee/ranged)
+        if (ModDetectionHelper.isGuardVillagersLoaded() && event.getEntity() instanceof PathfinderMob pathfinderMob
+                && "guardvillagers:guard".equals(ForgeRegistries.ENTITY_TYPES.getKey(pathfinderMob.getType()).toString())) {
+            try {
+                MobGunAttackGoal goal = new MobGunAttackGoal(pathfinderMob, 0.6D, 16.0F);
+                pathfinderMob.goalSelector.addGoal(2, goal);
             } catch (Exception e) {
                 // Silently handle errors
             }
@@ -126,15 +140,31 @@ public class TriggerMobsEvents {
             // Check and drop non-weapon, non-tool items from hands
             ItemStack mainHand = mob.getMainHandItem();
             ItemStack offHand = mob.getOffhandItem();
-            
+
             if (!mainHand.isEmpty() && !MobItemPickupHelper.isWeaponOrTool(mainHand)) {
                 mob.spawnAtLocation(mainHand.copy());
                 mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                mainHand = ItemStack.EMPTY;
             }
-            
+
             if (!offHand.isEmpty() && !MobItemPickupHelper.isWeaponOrTool(offHand)) {
                 mob.spawnAtLocation(offHand.copy());
                 mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+                offHand = ItemStack.EMPTY;
+            }
+
+            // Two-handed NTGL weapons: only in main hand, off hand must be empty
+            if (!mainHand.isEmpty() && mainHand.getItem() instanceof IWeapon
+                    && !WeaponModifierHelper.isOneHanded(new WeaponData(mainHand, mob)) && !offHand.isEmpty()) {
+                mob.spawnAtLocation(offHand.copy());
+                mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+                offHand = ItemStack.EMPTY;
+            }
+            if (!offHand.isEmpty() && offHand.getItem() instanceof IWeapon
+                    && !WeaponModifierHelper.isOneHanded(new WeaponData(offHand, mob))) {
+                mob.spawnAtLocation(offHand.copy());
+                mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+                offHand = ItemStack.EMPTY;
             }
             
             // Check nearby items and prevent pickup of non-weapon/non-tool items
@@ -151,9 +181,69 @@ public class TriggerMobsEvents {
                     continue;
                 }
                 
-                // If mob is close enough to pick up the item and it's not a weapon/tool, remove it
                 double distance = mob.distanceToSqr(itemEntity);
-                if (distance < 2.0D && !MobItemPickupHelper.isWeaponOrTool(itemStack)) {
+                if (distance >= 2.0D) {
+                    continue;
+                }
+
+                // Pick up weapon/tool from ground when hand is empty (e.g. guards and other mobs)
+                // Two-handed NTGL weapons go in main hand only; other hand must be empty. One-handed can dual-wield.
+                if (MobItemPickupHelper.isWeaponOrTool(itemStack)) {
+                    boolean isGun = itemStack.getItem() instanceof IWeapon;
+                    boolean isTwoHandedGun = isGun && !WeaponModifierHelper.isOneHanded(new WeaponData(itemStack, mob));
+
+                    if (mainHand.isEmpty()) {
+                        mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, itemStack.copy());
+                        itemEntity.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                        if (isTwoHandedGun && !offHand.isEmpty()) {
+                            mob.spawnAtLocation(offHand.copy());
+                            mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+                        }
+                        mainHand = mob.getMainHandItem();
+                        offHand = mob.getOffhandItem();
+                        continue;
+                    }
+                    if (offHand.isEmpty()) {
+                        // Two-handed guns only in main hand: swap main to gun and clear off
+                        if (isTwoHandedGun) {
+                            mob.spawnAtLocation(mainHand.copy());
+                            mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, itemStack.copy());
+                            itemEntity.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                            mainHand = mob.getMainHandItem();
+                            offHand = mob.getOffhandItem();
+                            continue;
+                        }
+                        mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, itemStack.copy());
+                        itemEntity.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                        offHand = mob.getOffhandItem();
+                        continue;
+                    }
+                    // Prefer swapping to a gun when holding something other than a gun (e.g. sword/crossbow)
+                    if (isGun) {
+                        if (!(mainHand.getItem() instanceof IWeapon)) {
+                            mob.spawnAtLocation(mainHand.copy());
+                            mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, itemStack.copy());
+                            if (isTwoHandedGun && !offHand.isEmpty()) {
+                                mob.spawnAtLocation(offHand.copy());
+                                mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+                            }
+                            itemEntity.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                            mainHand = mob.getMainHandItem();
+                            offHand = mob.getOffhandItem();
+                            continue;
+                        }
+                        if (!(offHand.getItem() instanceof IWeapon) && !isTwoHandedGun) {
+                            mob.spawnAtLocation(offHand.copy());
+                            mob.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, itemStack.copy());
+                            itemEntity.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                            offHand = mob.getOffhandItem();
+                            continue;
+                        }
+                    }
+                }
+
+                // If mob is close enough to pick up the item and it's not a weapon/tool, remove it
+                if (!MobItemPickupHelper.isWeaponOrTool(itemStack)) {
                     itemEntity.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
                 }
                 

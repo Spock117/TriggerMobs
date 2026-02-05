@@ -1,0 +1,264 @@
+{
+  "type": "guardvillagers:slot",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:loot_table", "name": "guardvillagers:entities/armor_sets/armor" }
+      ]
+    },
+    {
+      "name": "cgs_flintlock",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "cgs:flintlock",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:24}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.067 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "cgs_revolver",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "cgs:revolver",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:24}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.067 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "cgs_shotgun",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "cgs:shotgun",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:16}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.066 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "cgs_nailgun",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "cgs:nailgun",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:80}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.03 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "cgs_gatling",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "cgs:gatling",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:150}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.03 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "cgs_blazegun",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "cgs:blazegun",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:200}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.03 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "cgs_launcher",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "cgs:launcher",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:12}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.03 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "cgs_hammer",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "cgs:hammer",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:128}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.03 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_pistol10mm",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:pistol10mm",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:20}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.026 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_revolver",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:revolver",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:6}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.026 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_pipepistol",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:pipepistol",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:5}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.026 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_piperevolver",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:piperevolver",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:6}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.026 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_classic10mm",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:classic10mm",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:6}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.026 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_scout10mm",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:scout10mm",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:9}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.026 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_laser_pistol",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:laser_pistol",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:10}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.024 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_flamer",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:flamer",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:100}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.02 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_shotgun",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:shotgun",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:5}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.02 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_powdergun",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:powdergun",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:1}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.02 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_laser_rifle",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:laser_rifle",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:40}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.02 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_minigun",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:minigun",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:64}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.02 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "ntgl_gatling",
+      "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "ntgl:gatling",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:64}" }]
+      }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.02 }],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "minecraft:iron_sword" },
+        { "type": "minecraft:item", "name": "minecraft:crossbow" }
+      ],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
+    },
+    {
+      "name": "triggermobs_offhand_pool",
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "ntgl:round10mm", "weight": 5, "functions": [{ "function": "minecraft:set_count", "count": { "min": 12, "max": 32 } }] },
+        { "type": "minecraft:item", "name": "ntgl:round45", "weight": 4, "functions": [{ "function": "minecraft:set_count", "count": { "min": 12, "max": 24 } }] },
+        { "type": "minecraft:item", "name": "ntgl:round5mm", "weight": 3, "functions": [{ "function": "minecraft:set_count", "count": { "min": 24, "max": 48 } }] },
+        { "type": "minecraft:item", "name": "ntgl:shotshell", "weight": 4, "functions": [{ "function": "minecraft:set_count", "count": { "min": 8, "max": 16 } }] },
+        { "type": "minecraft:item", "name": "minecraft:arrow", "weight": 5, "functions": [{ "function": "minecraft:set_count", "count": { "min": 16, "max": 32 } }] },
+        { "type": "minecraft:item", "name": "minecraft:bread", "weight": 10, "functions": [{ "function": "minecraft:set_count", "count": { "min": 1, "max": 8 } }] },
+        { "type": "minecraft:item", "name": "minecraft:shield", "weight": 50 }
+      ],
+      "functions": [{ "function": "guardvillagers:slot", "slot": "offhand" }]
+    }
+  ]
+}

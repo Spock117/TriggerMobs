@@ -1,10 +1,11 @@
 package com.spock117.triggermobs.util;
 
 import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.util.Set;
 
@@ -26,15 +27,16 @@ public class MobItemPickupHelper {
         "minecraft:villager",
         "minecraft:piglin",
         "minecraft:piglin_brute",
-        "minecraft:zombified_piglin"
+        "minecraft:zombified_piglin",
+        "guardvillagers:guard"
     );
     
     /**
      * Checks if the mob should have custom item pickup behavior.
      */
     public static boolean shouldHandlePickup(Mob mob) {
-        ResourceLocation entityTypeKey = mob.getType().builtInRegistryHolder().key().location();
-        return entityTypeKey != null && MOBS_WITH_CUSTOM_PICKUP.contains(entityTypeKey.toString());
+        @SuppressWarnings("deprecation") ResourceLocation entityTypeKey = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
+        return MOBS_WITH_CUSTOM_PICKUP.contains(entityTypeKey.toString());
     }
     
     /**
@@ -127,8 +129,8 @@ public class MobItemPickupHelper {
         }
         
         // If new armor has more enchantments, prefer it
-        int currentEnchants = current.getEnchantmentTags().size();
-        int newEnchants = newArmor.getEnchantmentTags().size();
+        int currentEnchants = EnchantmentHelper.getEnchantments(current).size();
+        int newEnchants = EnchantmentHelper.getEnchantments(newArmor).size();
         if (newEnchants > currentEnchants) {
             return true;
         }

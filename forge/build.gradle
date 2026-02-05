@@ -151,6 +151,15 @@ dependencies {
         // Fallback to maven repository
         implementation fg.deobf("com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.20.1-3.0.4'}")
     }
+
+    // Guard Villagers (optional) - compileOnly for Guard type when building with jar in common/libs
+    def guardVillagerJars = fileTree(dir: libsDir, include: '*guardvillagers*.jar').files.findAll {
+        !it.name.contains('-sources') && !it.name.contains('-javadoc')
+    }
+    if (!guardVillagerJars.isEmpty()) {
+        compileOnly files(guardVillagerJars.first())
+        println "Using Guard Villagers from: ${guardVillagerJars.first()}"
+    }
 }
 
 // Process resources to expand properties

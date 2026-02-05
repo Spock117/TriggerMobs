@@ -12,15 +12,17 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class TriggerMobsForge {
     public TriggerMobsForge() {
         TriggerMobs.init();
-        
+
         // Register config - this will create the config file automatically in .minecraft/config/ or <server_folder>/config/
         // Using COMMON type so config is accessible and not world-specific
+        // Note: ModLoadingContext.get() is deprecated in newer Forge but required for 1.20.1 (no constructor injection)
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, TriggerMobsConfig.COMMON_SPEC);
-        
+
         // Initialize config values immediately (they will be updated when config loads/reloads)
         initializeConfigValues();
-        
-        // Config events must be registered to the mod event bus, not the Forge event bus
+
+        // Config events must be registered to the mod event bus
+        // Note: FMLJavaModLoadingContext.get() is deprecated in newer Forge but required for 1.20.1
         FMLJavaModLoadingContext.get().getModEventBus().register(this);
     }
     

@@ -11,6 +11,7 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
 - ✅ **Smart Item Pickup** (v1.1.0) - Mobs only pick up weapons and tools, automatically dropping other items
 - ✅ **Dual-Wielding Support** (v1.1.0) - One-handed weapons can be dual-wielded when mobs pick up compatible weapons
 - ✅ **Optional Create:Gunsmithing Support** (v1.1.0) - Weapon-specific AI behaviors for Create:Gunsmithing weapons when installed
+- ✅ **Optional Guard Villagers Support** - When [Guard Villagers](https://www.curseforge.com/minecraft/mc-mods/guard-villagers) is installed, guards can use NTGL and Create:Gunsmithing guns to attack hostile mobs or players (according to Guard Villagers' targeting logic)
 
 ## Requirements
 
@@ -32,12 +33,15 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
    - Place the NTGL jar file in `common/libs/` directory
    - The jar should be named `ntgl-*.jar` (excluding `-sources` and `-javadoc` variants)
 
-2. **Build TriggerMobs:**
+2. **Optional - Guard Villagers (for building with guard support):**
+   - Place a Guard Villagers JAR (e.g. `guardvillagers-1.20.1-*.jar`) in `common/libs/` to enable optional compile-time support. The mod still works at runtime with Guard Villagers without this step.
+
+3. **Build TriggerMobs:**
    ```bash
    ./gradlew build
    ```
 
-3. **Run for testing:**
+4. **Run for testing:**
    ```bash
    ./gradlew :forge:runClient
    ```
@@ -88,12 +92,31 @@ The project originally included Manifold plugin configuration but doesn't actual
 
 The project build files have been updated to remove Manifold. If you're building from an older version, follow the steps above.
 
+## Compatibility
+
+- **Guard Villagers:** Optional. If Guard Villagers is installed, guards will use NTGL and Create:Gunsmithing guns when they have a target (hostile mobs, angry-at players, village defenders). Guards get the same gun behavior as hostile mobs (strafing, reload, weapon-specific AI). For development builds, placing the Guard Villagers JAR in `common/libs/` (e.g. `guardvillagers-*.jar`) enables optional compile-time support.
+- **Recruiting with guns:** TriggerMobs adds NTGL/Create:Gunsmithing weapons to Guard Villagers’ “convertible” item tag. You can **right-click a villager while crouching** with an NTGL gun (e.g. flintlock, revolver, shotgun) to convert them into a guard **holding that gun**. Works with all Create:Gunsmithing weapons. Other NTGL gun packs can be supported by adding their items to the tag `guardvillagers:convertible_guard_items` via a datapack.
+- **Guard spawn equipment:** When Guard Villagers is installed, TriggerMobs **overrides** the guard equipment loot table. By default (Guard Villagers’ loot table `guardvillagers:entities/guard_armor`), guards spawn with:
+  - **Main hand:** iron sword or crossbow (random)
+  - **Off hand:** 10% bread (1–8), or 50% shield
+  - **Armor:** from Guard Villagers’ armor set table
+  The overridden table uses **separate loot pools** for CGS and NTGL guns (each 35% chance, main hand). **When Create:Gunsmithing is present, the NTGL gun pool is disabled** so guards only roll for CGS guns; when CGS is not installed, only the NTGL pool runs. Otherwise guards get the usual sword or crossbow. There is no CGS offhand pool (guards do not spawn with a gun in offhand from the table), so no sword/crossbow + gun offhand and no dual-wield CGS at spawn from loot. Armor and off-hand (bread/shield) are unchanged.
+
 ## Important Notes
 
 - **NTGL is required** - This mod will not work without NukaTeamGunLib installed
 - **Gun pack is required** - Add a gun pack that uses NTGL
 
 ## Changelog
+
+### Version 1.2.0
+
+- **Optional Guard Villagers Support**: When Guard Villagers is installed, guards can use NTGL and Create:Gunsmithing guns to attack hostile mobs or players (per Guard Villagers targeting). Guards get the same gun goal (priority 2), CanPickUpLoot, and custom weapon/tool pickup behavior as other mobs.
+- **Guard spawn equipment**: Override `guardvillagers:entities/guard_armor` with separate CGS and NTGL gun pools (35% each, main hand). When Create:Gunsmithing is loaded, LootTableLoadEvent removes the NTGL pool so guards only roll CGS guns. Optional dependency on Guard Villagers (load-after) in mods.toml. No CGS offhand pool (JSON-only: no sword/crossbow + gun offhand). Tag `guardvillagers:convertible_guard_items` extended so guards can be recruited with CGS weapons.
+- **Guard weapon pickup from ground**: Mobs with custom pickup behavior (including guards) now actively pick up weapons and tools from the ground when their main hand or off hand is empty, so guards and other mobs can equip guns dropped nearby.
+- **MobGunAttackGoal**: Set aggressive flag in start/stop for all mobs (fixes Guard attack animations when using guns).
+- **Mod icon**: Added Trigger Mobs logo as mod icon in mod list.
+- **Technical**: Optional Guard Villagers JAR in `common/libs` for compile-time support; ModDetectionHelper.isGuardVillagersLoaded(); GuardLootTableEvents (LootTableLoadEvent); Forge 1.20.1 compatibility (no-arg constructor for @Mod).
 
 ### Version 1.1.0
 
@@ -121,7 +144,7 @@ The mod structure:
   - `goals/` - AI goals (MobGunAttackGoal)
   - `util/` - Utility classes (InaccuracyHelper, MobItemPickupHelper)
 - `forge/src/main/java/com/spock117/triggermobs/` - Forge-specific code
-  - `events/` - Forge event handlers (TriggerMobsEvents)
+  - `events/` - Forge event handlers (TriggerMobsEvents, GuardLootTableEvents)
 
 ## License
 

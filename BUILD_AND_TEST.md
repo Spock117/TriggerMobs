@@ -187,15 +187,10 @@ triggermobs/
 └── build.gradle           # Root build file
 ```
 
-## Version 1.1.0 Changes
-
-### Architecture Changes
+## Version 1.1.0 Changes### Architecture Changes
 - **Replaced Mixin system with Forge events** for mob item pickup behavior
 - Item pickup logic now handled in `TriggerMobsEvents.onLevelTick` event handler
-- More reliable and maintainable than the previous Mixin approach
-
-### New Features to Test
+- More reliable and maintainable than the previous Mixin approach### New Features to Test
 - **Smart Item Pickup**: Mobs filter items and only pick up weapons/tools
 - **Dual-Wielding**: One-handed weapons can be dual-wielded
 - **Create:Gunsmithing Support**: Weapon-specific AI when Create:Gunsmithing is installed
-
