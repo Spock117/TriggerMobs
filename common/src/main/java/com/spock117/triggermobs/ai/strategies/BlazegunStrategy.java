@@ -109,14 +109,12 @@ public class BlazegunStrategy implements WeaponAIStrategy {
     
     @Override
     public int getAttackDelay(PathfinderMob mob, WeaponData weaponData) {
-        // Blazegun: rate is 3 ticks (continuous fire)
         int rate = WeaponModifierHelper.getRate(weaponData);
         if (rate <= 0) {
             rate = 3;
         }
-        
-        int variance = mob.getRandom().nextInt(3) - 1;
-        return Math.max(rate + variance, 2);
+        int variance = mob.getRandom().nextInt(3);
+        return Math.max(rate + 3 + variance, 5);
     }
     
     @Override

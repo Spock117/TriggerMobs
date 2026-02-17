@@ -110,14 +110,12 @@ public class ShotgunStrategy implements WeaponAIStrategy {
     
     @Override
     public int getAttackDelay(PathfinderMob mob, WeaponData weaponData) {
-        // Shotgun: rate is 2 ticks (very fast)
         int rate = WeaponModifierHelper.getRate(weaponData);
         if (rate <= 0) {
             rate = 2;
         }
-        
-        int variance = mob.getRandom().nextInt(3) - 1; // ±1 tick
-        return Math.max(rate + variance, 1);
+        int variance = mob.getRandom().nextInt(3);
+        return Math.max(rate + 3 + variance, 5);
     }
     
     @Override

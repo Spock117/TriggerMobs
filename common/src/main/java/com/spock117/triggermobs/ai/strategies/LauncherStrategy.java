@@ -109,14 +109,12 @@ public class LauncherStrategy implements WeaponAIStrategy {
     
     @Override
     public int getAttackDelay(PathfinderMob mob, WeaponData weaponData) {
-        // Launcher: rate is 4 ticks
         int rate = WeaponModifierHelper.getRate(weaponData);
         if (rate <= 0) {
             rate = 4;
         }
-        
-        int variance = mob.getRandom().nextInt(5) - 2;
-        return Math.max(rate + variance, 3);
+        int variance = mob.getRandom().nextInt(3);
+        return Math.max(rate + 3 + variance, 5);
     }
     
     @Override

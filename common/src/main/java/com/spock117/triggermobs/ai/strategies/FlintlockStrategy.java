@@ -112,15 +112,13 @@ public class FlintlockStrategy implements WeaponAIStrategy {
     
     @Override
     public int getAttackDelay(PathfinderMob mob, WeaponData weaponData) {
-        // Flintlock: rate is 10 ticks, but we need to account for reload time after each shot
+        // NTGL cooldown is rate*50ms = rate ticks; add 3-tick buffer for tick/ms drift
         int rate = WeaponModifierHelper.getRate(weaponData);
         if (rate <= 0) {
-            rate = 10; // Default fallback
+            rate = 10;
         }
-        
-        // Add small variance
-        int variance = mob.getRandom().nextInt(5) - 2; // ±2 ticks
-        return Math.max(rate + variance, 8);
+        int variance = mob.getRandom().nextInt(3); // 0-2 extra ticks (no negative - avoids firing before cooldown)
+        return Math.max(rate + 3 + variance, 10);
     }
     
     @Override

@@ -2,6 +2,7 @@ package com.spock117.triggermobs.ai;
 
 import com.nukateam.ntgl.common.data.WeaponData;
 import com.nukateam.ntgl.common.data.holders.AttachmentType;
+import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -36,10 +37,14 @@ public class AttachmentAwareStrategy implements WeaponAIStrategy {
     @Override
     public int getAttackDelay(PathfinderMob mob, WeaponData weaponData) {
         int delay = base.getAttackDelay(mob, weaponData);
-        if (WeaponStateHelper.hasAttachmentEquipped(weapon, AttachmentType.MAGAZINE)) {
-            delay = Math.max(1, (int) (delay * 0.7));
+        int rate = WeaponModifierHelper.getRate(weaponData);
+        if (rate <= 0) {
+            rate = 5;
         }
-        return delay;
+        if (WeaponStateHelper.hasAttachmentEquipped(weapon, AttachmentType.MAGAZINE)) {
+            delay = Math.max((int) (delay * 0.7), rate + 2); // Don't go below NTGL cooldown
+        }
+        return Math.max(delay, rate + 2);
     }
 
     @Override

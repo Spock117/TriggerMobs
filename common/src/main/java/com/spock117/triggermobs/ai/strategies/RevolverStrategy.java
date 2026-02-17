@@ -110,14 +110,12 @@ public class RevolverStrategy implements WeaponAIStrategy {
     
     @Override
     public int getAttackDelay(PathfinderMob mob, WeaponData weaponData) {
-        // Revolver: rate is 10 ticks
         int rate = WeaponModifierHelper.getRate(weaponData);
         if (rate <= 0) {
             rate = 10;
         }
-        
-        int variance = mob.getRandom().nextInt(5) - 2;
-        return Math.max(rate + variance, 8);
+        int variance = mob.getRandom().nextInt(3);
+        return Math.max(rate + 3 + variance, 10);
     }
     
     @Override

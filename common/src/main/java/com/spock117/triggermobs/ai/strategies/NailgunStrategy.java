@@ -109,14 +109,12 @@ public class NailgunStrategy implements WeaponAIStrategy {
     
     @Override
     public int getAttackDelay(PathfinderMob mob, WeaponData weaponData) {
-        // Nailgun: rate is 2 ticks (very fast sustained fire)
         int rate = WeaponModifierHelper.getRate(weaponData);
         if (rate <= 0) {
             rate = 2;
         }
-        
-        int variance = mob.getRandom().nextInt(3) - 1;
-        return Math.max(rate + variance, 1);
+        int variance = mob.getRandom().nextInt(3);
+        return Math.max(rate + 3 + variance, 5);
     }
     
     @Override

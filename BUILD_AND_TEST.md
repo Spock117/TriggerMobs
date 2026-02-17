@@ -193,11 +193,7 @@ triggermobs/
 ## Version 1.3.0 Changes
 
 - **CGS Gun Spawning**: Mobs and guards spawn with Create:Gunsmithing weapons. Config: `cgsSpawningEnabled`, `weaponChance`, `guardCgsSpawningEnabled`, `guardWeaponChance`, `mobWeaponOverrides`, `dualWieldChance`, `maxAttachmentSlots`, etc.
-- **Accuracy Config**: `aiAccuracyNerf` (mobs), `guardAccuracyNerf` (guards). Config file: `config/triggermobs-common.toml`.
-
-## Version 1.1.0 Changes
-
-### Architecture Changes
+- **Accuracy Config**: `aiAccuracyNerf` (mobs), `guardAccuracyNerf` (guards). Config file: `config/triggermobs-common.toml`.## Version 1.1.0 Changes### Architecture Changes
 - **Replaced Mixin system with Forge events** for mob item pickup behavior
 - Item pickup logic now handled in `TriggerMobsEvents.onLevelTick` event handler
 - More reliable and maintainable than the previous Mixin approach### New Features to Test

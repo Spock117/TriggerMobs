@@ -2,6 +2,7 @@ package com.spock117.triggermobs.ai.strategies;
 
 import com.nukateam.ntgl.common.data.WeaponData;
 import com.nukateam.ntgl.common.network.ServerPlayHandler;
+import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.nukateam.ntgl.common.network.message.C2SMessageShoot;
 import com.nukateam.ntgl.common.data.holders.WeaponMode;
 import com.spock117.triggermobs.TriggerMobs;
@@ -111,22 +112,21 @@ public class GenericWeaponStrategy implements WeaponAIStrategy {
     
     @Override
     public int getAttackDelay(PathfinderMob mob, WeaponData weaponData) {
-        // Use config values with fallback to defaults
         int baseIntervalTicks = TriggerMobs.baseAttackIntervalTicks;
         int varianceTicks = TriggerMobs.attackIntervalVariance;
-        
-        // Defensive check
         if (baseIntervalTicks <= 0 || baseIntervalTicks < 20) {
             baseIntervalTicks = 200;
         }
         if (varianceTicks < 0) {
             varianceTicks = 80;
         }
-        
-        // Add randomization: ±variance ticks
         int randomOffset = mob.getRandom().nextInt(varianceTicks * 2 + 1) - varianceTicks;
         int calculatedDelay = baseIntervalTicks + randomOffset;
-        return Math.max(20, calculatedDelay); // Ensure at least 20 ticks minimum
+        int rate = WeaponModifierHelper.getRate(weaponData);
+        if (rate <= 0) {
+            rate = 10;
+        }
+        return Math.max(Math.max(20, calculatedDelay), rate + 3); // Respect NTGL cooldown
     }
     
     @Override

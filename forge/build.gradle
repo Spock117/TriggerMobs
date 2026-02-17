@@ -177,7 +177,7 @@ tasks.named('processResources', ProcessResources).configure {
         mod_name: mod_name,
         mod_version: mod_version,
         mod_authors: mod_authors,
-        mod_description: description,
+        mod_description: project.findProperty('description') ?: 'Trigger Mobs - enables mobs to use NTGL and Create:Gunsmithing guns.',
         license: license,
         credits: project.findProperty('credits') ?: '',
         java_version: '17'
