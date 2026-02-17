@@ -10,7 +10,10 @@ public class TriggerMobs {
     // Config values (set from Forge side)
     public static int baseAttackIntervalTicks = 200; // Default: 10 seconds
     public static int attackIntervalVariance = 80; // Default: ±4 seconds
-    public static float tier1Probability = 0.125f; // Default: 12.5% (1/8) chance for accurate shots
+    public static float aiAccuracyNerf = 1.0f; // 1.0 = baseline inaccuracy, higher = dumber zombies
+    public static float guardAccuracyNerf = 0.7f; // Separate nerf for guard villagers (typically more skilled)
+    public static int aiReactionDelayTicks = 0;
+    public static int outOfAmmoFallbackTicks = 100;
 
     public static void init() {
         LOGGER.info("TriggerMobs mod initialized");

@@ -81,8 +81,8 @@ public class GenericWeaponStrategy implements WeaponAIStrategy {
         float pitch = mob.getViewXRot(1.0F);
         
         // Add inaccuracy
-        float pitchOffset = InaccuracyHelper.getPitchOffset(mob.getRandom());
-        float yawOffset = InaccuracyHelper.getYawOffset(mob.getRandom());
+        float pitchOffset = InaccuracyHelper.getPitchOffset(mob.getRandom(), mob);
+        float yawOffset = InaccuracyHelper.getYawOffset(mob.getRandom(), mob);
         
         // Apply inaccuracy to rotation
         float finalYaw = yaw + yawOffset;

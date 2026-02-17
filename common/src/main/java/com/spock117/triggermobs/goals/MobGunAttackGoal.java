@@ -41,6 +41,9 @@ public class MobGunAttackGoal extends Goal {
     // Strategy pattern: current weapon AI strategy
     private WeaponAIStrategy currentStrategy;
     private ItemStack lastWeaponStack = ItemStack.EMPTY; // Track weapon changes
+
+    // Out-of-ammo fallback: when mob has no ammo and cannot reload, fall back to melee/ranged after N ticks
+    private int outOfAmmoTicks;
     
     public MobGunAttackGoal(PathfinderMob mob, double speedModifier, float attackRadius) {
         this.mob = mob;
@@ -57,7 +60,13 @@ public class MobGunAttackGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return this.isValidTarget() && this.isHoldingGun();
+        if (!this.isValidTarget() || !this.isHoldingGun()) {
+            return false;
+        }
+        if (TriggerMobs.outOfAmmoFallbackTicks <= 0 && !hasAnyAmmoOrCanReload()) {
+            return false;
+        }
+        return true;
     }
 
     private boolean isHoldingGun() {
@@ -65,14 +74,36 @@ public class MobGunAttackGoal extends Goal {
         ItemStack offHandStack = mob.getOffhandItem();
         boolean mainHand = mainHandStack.getItem() instanceof IWeapon;
         boolean offHand = offHandStack.getItem() instanceof IWeapon;
-        
-        
         return mainHand || offHand;
+    }
+
+    private boolean hasAnyAmmoOrCanReload() {
+        ItemStack mainHand = mob.getMainHandItem();
+        ItemStack offHand = mob.getOffhandItem();
+        if (mainHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(mainHand)) return true;
+        if (offHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(offHand)) return true;
+        return false;
     }
 
     @Override
     public boolean canContinueToUse() {
-        return this.isValidTarget() && (this.canUse() || !this.mob.getNavigation().isDone()) && this.isHoldingGun();
+        if (!this.isValidTarget() || !this.isHoldingGun()) {
+            return false;
+        }
+        if (!hasAnyAmmoOrCanReload()) {
+            int fallbackTicks = TriggerMobs.outOfAmmoFallbackTicks;
+            if (fallbackTicks > 0) {
+                outOfAmmoTicks++;
+                if (outOfAmmoTicks >= fallbackTicks) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            outOfAmmoTicks = 0;
+        }
+        return (this.canUse() || !this.mob.getNavigation().isDone());
     }
 
     private boolean isValidTarget() {
@@ -244,8 +275,9 @@ public class MobGunAttackGoal extends Goal {
             return;
         }
 
-        // Attack logic
-        if (isInRange && this.seeTime >= 5 && attackDelay <= 0) {
+        // Attack logic (aiReactionDelayTicks adds extra delay before first shot)
+        int reactionThreshold = 5 + TriggerMobs.aiReactionDelayTicks;
+        if (isInRange && this.seeTime >= reactionThreshold && attackDelay <= 0) {
             // Delegate shooting to strategy
             currentStrategy.shoot(mob, target, handToUse, weaponToUse);
             
@@ -260,28 +292,7 @@ public class MobGunAttackGoal extends Goal {
             
             attackDelay = Math.max(1, calculatedDelay); // Ensure at least 1 tick minimum
             
-            // Update strafe cooldown (if strategy supports it)
-            if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.GenericWeaponStrategy genericStrategy) {
-                genericStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.FlintlockStrategy flintlockStrategy) {
-                flintlockStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.RevolverStrategy revolverStrategy) {
-                revolverStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.ShotgunStrategy shotgunStrategy) {
-                shotgunStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.NailgunStrategy nailgunStrategy) {
-                nailgunStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.GatlingStrategy gatlingStrategy) {
-                gatlingStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.BlazegunStrategy blazegunStrategy) {
-                blazegunStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.LauncherStrategy launcherStrategy) {
-                launcherStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.HammerStrategy hammerStrategy) {
-                hammerStrategy.updateStrafeCooldown(mob);
-            } else if (currentStrategy instanceof com.spock117.triggermobs.ai.strategies.GrenadeStrategy grenadeStrategy) {
-                grenadeStrategy.updateStrafeCooldown(mob);
-            }
+            currentStrategy.updateStrafeCooldown(mob);
             
             // Alternate hands for dual wielding
             if (isDualWielding) {
@@ -310,6 +321,7 @@ public class MobGunAttackGoal extends Goal {
         this.attackDelay = 0;
         this.strafeCooldown = 0;
         this.lastWeaponStack = ItemStack.EMPTY;
+        this.outOfAmmoTicks = 0;
     }
 }
 

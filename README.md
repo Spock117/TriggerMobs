@@ -1,17 +1,18 @@
 # TriggerMobs Mod
 
-A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Version 1.1.0 adds optional Create:Gunsmithing support with weapon-specific AI behaviors!
+A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0) equips mobs and guards with guns on spawn—no InControl needed!
 
 ## Features
 
 - ✅ **Auto Reload** - Mobs automatically reload when needed
 - ✅ **Universal Support** - All hostile mobs that can hold items can use guns
 - ✅ **Improved AI** - Strafing, better targeting, and movement behavior
-- ✅ **Moderate Inaccuracy** - Mobs have ±3-5 degree spread (not perfect aim)
+- ✅ **Configurable Inaccuracy** - Mobs have configurable spread (aiAccuracyNerf); guards have separate guardAccuracyNerf (typically more skilled)
 - ✅ **Smart Item Pickup** (v1.1.0) - Mobs only pick up weapons and tools, automatically dropping other items
 - ✅ **Dual-Wielding Support** (v1.1.0) - One-handed weapons can be dual-wielded when mobs pick up compatible weapons
 - ✅ **Optional Create:Gunsmithing Support** (v1.1.0) - Weapon-specific AI behaviors for Create:Gunsmithing weapons when installed
-- ✅ **Optional Guard Villagers Support** - When [Guard Villagers](https://www.curseforge.com/minecraft/mc-mods/guard-villagers) is installed, guards can use NTGL and Create:Gunsmithing guns to attack hostile mobs or players (according to Guard Villagers' targeting logic)
+- ✅ **Built-in CGS Gun Spawning** (v1.3.0) - Mobs and guards spawn with Create:Gunsmithing weapons. Configurable per-mob weapon pools, dual wield chance, attachments, and drop chance. No InControl or datapack needed for mob CGS spawning.
+- ✅ **Optional Guard Villagers Support** - When [Guard Villagers](https://www.curseforge.com/minecraft/mc-mods/guard-villagers) is installed, guards can use NTGL and Create:Gunsmithing guns. Guards have separate accuracy (guardAccuracyNerf) and their own CGS spawn config (guardCgsSpawningEnabled, guardWeaponChance).
 
 ## Requirements
 
@@ -97,10 +98,10 @@ The project build files have been updated to remove Manifold. If you're building
 - **Guard Villagers:** Optional. If Guard Villagers is installed, guards will use NTGL and Create:Gunsmithing guns when they have a target (hostile mobs, angry-at players, village defenders). Guards get the same gun behavior as hostile mobs (strafing, reload, weapon-specific AI). For development builds, placing the Guard Villagers JAR in `common/libs/` (e.g. `guardvillagers-*.jar`) enables optional compile-time support.
 - **Recruiting with guns:** TriggerMobs adds NTGL/Create:Gunsmithing weapons to Guard Villagers’ “convertible” item tag. You can **right-click a villager while crouching** with an NTGL gun (e.g. flintlock, revolver, shotgun) to convert them into a guard **holding that gun**. Works with all Create:Gunsmithing weapons. Other NTGL gun packs can be supported by adding their items to the tag `guardvillagers:convertible_guard_items` via a datapack.
 - **Guard spawn equipment:** When Guard Villagers is installed, TriggerMobs **overrides** the guard equipment loot table. By default (Guard Villagers’ loot table `guardvillagers:entities/guard_armor`), guards spawn with:
-  - **Main hand:** iron sword or crossbow (random)
+  - **Main hand:** CGS guns (from TriggerMobs config) or TConstruct/other from datapack
   - **Off hand:** 10% bread (1–8), or 50% shield
   - **Armor:** from Guard Villagers’ armor set table
-  The overridden table uses **separate loot pools** for CGS and NTGL guns (each 35% chance, main hand). **When Create:Gunsmithing is present, the NTGL gun pool is disabled** so guards only roll for CGS guns; when CGS is not installed, only the NTGL pool runs. Otherwise guards get the usual sword or crossbow. There is no CGS offhand pool (guards do not spawn with a gun in offhand from the table), so no sword/crossbow + gun offhand and no dual-wield CGS at spawn from loot. Armor and off-hand (bread/shield) are unchanged.
+  TriggerMobs handles CGS gun spawning via config (`guardCgsSpawningEnabled`, `guardWeaponChance`, `mobWeaponOverrides` for `guardvillagers:guard`). Guards may spawn with TConstruct weapons from a datapack; TriggerMobs can overwrite main hand with CGS when enabled. When `guardCgsSpawningEnabled` is true, TriggerMobs removes CGS pools from the guard loot table. Armor and off-hand (bread/shield) come from the datapack or Guard Villagers defaults.
 
 ## Important Notes
 
@@ -108,6 +109,14 @@ The project build files have been updated to remove Manifold. If you're building
 - **Gun pack is required** - Add a gun pack that uses NTGL
 
 ## Changelog
+
+### Version 1.3.0
+
+- **Built-in CGS Gun Spawning**: Mobs spawn with Create:Gunsmithing weapons on join. Config: `cgsSpawningEnabled`, `weaponChance` (0.2), `dualWieldChance`, `mobWeaponOverrides` (per-mob weapon pools), `maxAttachmentSlots`, `allowAdvancedWeapons`, `dropChanceOverride`. Works with `valid_gun_mobs` tag and config overrides. TConstruct-Emergence compatible (skips when TC-E equipped).
+- **Guard CGS Spawning**: Separate config for guards: `guardCgsSpawningEnabled`, `guardWeaponChance` (0.35). Guards can overwrite TConstruct weapons with CGS. When enabled, TriggerMobs removes CGS pools from `guard_armor` loot table. Default guard weapon pool: flintlock, revolver, shotgun, nailgun, gatling, blazegun, launcher.
+- **Guard Accuracy Nerf**: New `guardAccuracyNerf` (default 0.7) for guard villagers. Guards use this instead of `aiAccuracyNerf` for shooting spread.
+- **Accuracy Config**: `aiAccuracyNerf` (1.0 = ±4–8° baseline). Higher = more inaccurate, lower = more accurate.
+- **Other AI Config**: `aiReactionDelayTicks`, `outOfAmmoFallbackTicks` for fallback when ammo runs out.
 
 ### Version 1.2.0
 

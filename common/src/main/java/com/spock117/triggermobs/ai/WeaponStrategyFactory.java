@@ -1,11 +1,13 @@
 package com.spock117.triggermobs.ai;
 
+import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
 import com.spock117.triggermobs.ai.strategies.*;
 import com.spock117.triggermobs.util.WeaponTypeDetector;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * Factory class to create appropriate weapon AI strategies based on weapon type.
+ * Wraps base strategies in AttachmentAwareStrategy when the weapon has attachments.
  */
 public class WeaponStrategyFactory {
     
@@ -19,16 +21,19 @@ public class WeaponStrategyFactory {
             return new GenericWeaponStrategy();
         }
         
-        // Check if it's a Create:Gunsmithing weapon by registry name
-        // If CGS mod isn't loaded, the items won't exist, so this check will naturally fail
+        WeaponAIStrategy base = createBaseStrategy(weapon);
+        if (hasAttachments(weapon)) {
+            return new AttachmentAwareStrategy(base, weapon);
+        }
+        return base;
+    }
+
+    private static WeaponAIStrategy createBaseStrategy(ItemStack weapon) {
         if (!WeaponTypeDetector.isCGSWeapon(weapon)) {
             return new GenericWeaponStrategy();
         }
         
-        // Get the specific weapon type
         WeaponTypeDetector.CGSWeaponType weaponType = WeaponTypeDetector.getCGSWeaponType(weapon);
-        
-        // Create appropriate strategy based on weapon type
         return switch (weaponType) {
             case FLINTLOCK -> new FlintlockStrategy();
             case REVOLVER -> new RevolverStrategy();
@@ -41,6 +46,11 @@ public class WeaponStrategyFactory {
             case GRENADE -> new GrenadeStrategy();
             case UNKNOWN -> new GenericWeaponStrategy();
         };
+    }
+
+    private static boolean hasAttachments(ItemStack weapon) {
+        var items = WeaponStateHelper.getAttachmentItems(weapon);
+        return items != null && !items.isEmpty() && items.stream().anyMatch(s -> !s.isEmpty());
     }
 }
 

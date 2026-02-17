@@ -84,9 +84,11 @@ The mod includes run configurations. You can run directly from Gradle:
 2. **Test features:**
    - ✅ Mobs should automatically use guns when holding them
    - ✅ Mobs should auto-reload when ammo runs out
-   - ✅ Mobs should have moderate inaccuracy (not perfect aim)
+   - ✅ Mobs should have configurable inaccuracy (see `aiAccuracyNerf`, `guardAccuracyNerf` in config)
    - ✅ Mobs should strafe while shooting
    - ✅ All hostile mobs should work (zombies, pillagers, vindicators, etc.)
+   - ✅ **CGS Gun Spawning (v1.3.0)**: With Create:Gunsmithing, mobs spawn with CGS guns per `weaponChance` and `mobWeaponOverrides`. Check config `cgsSpawningEnabled`, `weaponChance`.
+   - ✅ **Guard CGS Spawning (v1.3.0)**: With Guard Villagers + CGS, guards spawn with CGS guns per `guardWeaponChance`. Check `guardCgsSpawningEnabled`.
    - ✅ **Smart Item Pickup (v1.1.0)**: Mobs should only pick up weapons/tools, drop other items
    - ✅ **Dual-Wielding (v1.1.0)**: Mobs can dual-wield one-handed weapons when picking up compatible weapons
    - ✅ **Create:Gunsmithing AI (v1.1.0)**: If Create:Gunsmithing is installed, mobs should use weapon-specific AI behaviors
@@ -99,6 +101,7 @@ The mod includes run configurations. You can run directly from Gradle:
    - **Item Pickup (v1.1.0)**: Drop a non-weapon item near a mob - it should not pick it up. Drop a weapon - it should pick it up.
    - **Dual-Wielding (v1.1.0)**: Give a mob a one-handed weapon, then drop another compatible one-handed weapon nearby - it should dual-wield.
    - **Create:Gunsmithing (v1.1.0)**: If Create:Gunsmithing is installed, test different weapon types (flintlock, shotgun, gatling, etc.) to verify weapon-specific behaviors.
+   - **CGS Spawning (v1.3.0)**: Create a world and spawn zombies/skeletons; some should spawn with CGS guns. Adjust `weaponChance` in config to test. For guards, ensure `guardCgsSpawningEnabled` and `guardWeaponChance` work.
 
 ## Deployment
 
@@ -187,7 +190,14 @@ triggermobs/
 └── build.gradle           # Root build file
 ```
 
-## Version 1.1.0 Changes### Architecture Changes
+## Version 1.3.0 Changes
+
+- **CGS Gun Spawning**: Mobs and guards spawn with Create:Gunsmithing weapons. Config: `cgsSpawningEnabled`, `weaponChance`, `guardCgsSpawningEnabled`, `guardWeaponChance`, `mobWeaponOverrides`, `dualWieldChance`, `maxAttachmentSlots`, etc.
+- **Accuracy Config**: `aiAccuracyNerf` (mobs), `guardAccuracyNerf` (guards). Config file: `config/triggermobs-common.toml`.
+
+## Version 1.1.0 Changes
+
+### Architecture Changes
 - **Replaced Mixin system with Forge events** for mob item pickup behavior
 - Item pickup logic now handled in `TriggerMobsEvents.onLevelTick` event handler
 - More reliable and maintainable than the previous Mixin approach### New Features to Test

@@ -1,6 +1,7 @@
 package com.spock117.triggermobs.events;
 
 import com.spock117.triggermobs.TriggerMobs;
+import com.spock117.triggermobs.config.TriggerMobsConfig;
 import com.spock117.triggermobs.util.ModDetectionHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.event.LootTableLoadEvent;
@@ -8,8 +9,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * When Create:Gunsmithing (CGS) is present, the guard_armor loot table is modified
- * to remove the NTGL gun pool so guards only spawn with CGS guns from the gun pools.
+ * When Create:Gunsmithing (CGS) is present, the guard_armor loot table is modified:
+ * - NTGL gun pools are always removed.
+ * - CGS gun pools are removed when guard CGS spawning is enabled in TriggerMobs,
+ *   so TriggerMobs is the sole source of guard CGS weapons (TConstruct weapons from
+ *   datapack remain).
  */
 @Mod.EventBusSubscriber(modid = TriggerMobs.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class GuardLootTableEvents {
@@ -23,6 +27,10 @@ public class GuardLootTableEvents {
         "ntgl_classic10mm", "ntgl_scout10mm", "ntgl_laser_pistol",
         "ntgl_flamer", "ntgl_shotgun", "ntgl_powdergun", "ntgl_laser_rifle",
         "ntgl_minigun", "ntgl_gatling"
+    };
+    private static final String[] CGS_POOL_NAMES = {
+        "cgs_flintlock", "cgs_revolver", "cgs_shotgun", "cgs_nailgun",
+        "cgs_gatling", "cgs_blazegun", "cgs_launcher"
     };
 
     @SubscribeEvent
@@ -39,6 +47,11 @@ public class GuardLootTableEvents {
         try {
             for (String poolName : NTGL_POOL_NAMES) {
                 event.getTable().removePool(poolName);
+            }
+            if (TriggerMobsConfig.COMMON.guardCgsSpawningEnabled.get()) {
+                for (String poolName : CGS_POOL_NAMES) {
+                    event.getTable().removePool(poolName);
+                }
             }
         } catch (RuntimeException e) {
             // Table may already be frozen or pool missing; ignore

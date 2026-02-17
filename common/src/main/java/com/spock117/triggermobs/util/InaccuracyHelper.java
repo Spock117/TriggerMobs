@@ -2,82 +2,49 @@ package com.spock117.triggermobs.util;
 
 import com.spock117.triggermobs.TriggerMobs;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 
 public class InaccuracyHelper {
-    // Tier 1: Accurate - ±3-5 degrees
-    private static final float TIER1_MIN_INACCURACY = 3.0f;
-    private static final float TIER1_MAX_INACCURACY = 5.0f;
-    
-    // Tier 2: Less accurate - ±12-15 degrees
-    private static final float TIER2_MIN_INACCURACY = 12.0f;
-    private static final float TIER2_MAX_INACCURACY = 15.0f;
-    
+    // Base inaccuracy range at 1.0 multiplier: ±4-8 degrees (between old tier1 and tier2)
+    private static final float BASE_MIN_DEGREES = 4.0f;
+    private static final float BASE_MAX_DEGREES = 8.0f;
+
+    private static final String GUARD_DESCRIPTION_ID = "entity.guardvillagers.guard";
+
     /**
-     * Gets the probability of Tier 2 (less accurate) shots.
-     * Calculated as (1.0 - tier1Probability) from config.
-     * @return Probability of Tier 2 shots (0.0 to 1.0)
+     * Returns the accuracy nerf multiplier for the given shooter. Guards use guardAccuracyNerf.
      */
-    private static float getTier2Probability() {
-        // Ensure tier1Probability is valid (defensive check)
-        float tier1Prob = TriggerMobs.tier1Probability;
-        if (tier1Prob < 0.0f || tier1Prob > 1.0f) {
-            tier1Prob = 0.125f; // Default: 12.5%
+    public static float getAccuracyNerfFor(LivingEntity shooter) {
+        if (shooter != null && GUARD_DESCRIPTION_ID.equals(shooter.getType().getDescriptionId())) {
+            return Math.max(0.1f, TriggerMobs.guardAccuracyNerf);
         }
-        return 1.0f - tier1Prob;
+        return Math.max(0.1f, TriggerMobs.aiAccuracyNerf);
     }
     
     /**
-     * Calculates a random pitch offset for inaccuracy with two tiers
+     * Calculates a random pitch offset for inaccuracy.
+     * Final spread = base range (±4-8 degrees) * accuracy nerf (guardAccuracyNerf for guards, aiAccuracyNerf otherwise).
      * @param random The random source
+     * @param shooter The entity shooting (used to pick guard vs regular nerf)
      * @return Pitch offset in degrees
      */
-    public static float getPitchOffset(RandomSource random) {
-        // Choose tier based on configurable probability
-        float tier2Prob = getTier2Probability();
-        boolean useTier2 = random.nextFloat() < tier2Prob;
-        
-        float minInaccuracy, maxInaccuracy;
-        if (useTier2) {
-            // Tier 2: Less accurate (±12-15 degrees)
-            minInaccuracy = TIER2_MIN_INACCURACY;
-            maxInaccuracy = TIER2_MAX_INACCURACY;
-        } else {
-            // Tier 1: Accurate (±3-5 degrees)
-            minInaccuracy = TIER1_MIN_INACCURACY;
-            maxInaccuracy = TIER1_MAX_INACCURACY;
-        }
-        
-        float range = maxInaccuracy - minInaccuracy;
-        float base = minInaccuracy + random.nextFloat() * range;
-        // Randomly positive or negative
-        return (random.nextBoolean() ? 1 : -1) * base;
+    public static float getPitchOffset(RandomSource random, LivingEntity shooter) {
+        float base = BASE_MIN_DEGREES + random.nextFloat() * (BASE_MAX_DEGREES - BASE_MIN_DEGREES);
+        float nerf = getAccuracyNerfFor(shooter);
+        return (random.nextBoolean() ? 1 : -1) * base * nerf;
     }
     
     /**
-     * Calculates a random yaw offset for inaccuracy with two tiers
+     * Calculates a random yaw offset for inaccuracy.
+     * Final spread = base range (±4-8 degrees) * accuracy nerf (guardAccuracyNerf for guards, aiAccuracyNerf otherwise).
      * @param random The random source
+     * @param shooter The entity shooting (used to pick guard vs regular nerf)
      * @return Yaw offset in degrees
      */
-    public static float getYawOffset(RandomSource random) {
-        // Choose tier based on configurable probability
-        float tier2Prob = getTier2Probability();
-        boolean useTier2 = random.nextFloat() < tier2Prob;
-        
-        float minInaccuracy, maxInaccuracy;
-        if (useTier2) {
-            // Tier 2: Less accurate (±12-15 degrees)
-            minInaccuracy = TIER2_MIN_INACCURACY;
-            maxInaccuracy = TIER2_MAX_INACCURACY;
-        } else {
-            // Tier 1: Accurate (±3-5 degrees)
-            minInaccuracy = TIER1_MIN_INACCURACY;
-            maxInaccuracy = TIER1_MAX_INACCURACY;
-        }
-        
-        float range = maxInaccuracy - minInaccuracy;
-        float base = minInaccuracy + random.nextFloat() * range;
-        // Randomly positive or negative
-        return (random.nextBoolean() ? 1 : -1) * base;
+    public static float getYawOffset(RandomSource random, LivingEntity shooter) {
+        float base = BASE_MIN_DEGREES + random.nextFloat() * (BASE_MAX_DEGREES - BASE_MIN_DEGREES);
+        float nerf = getAccuracyNerfFor(shooter);
+        return (random.nextBoolean() ? 1 : -1) * base * nerf;
     }
 }
 

@@ -72,5 +72,11 @@ public interface WeaponAIStrategy {
      * @return true if the weapon should maintain distance, false if it should close in
      */
     boolean shouldMaintainDistance();
+
+    /**
+     * Updates strafe cooldown after shooting. Default no-op.
+     */
+    default void updateStrafeCooldown(PathfinderMob mob) {
+    }
 }
 

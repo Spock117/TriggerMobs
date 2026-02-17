@@ -76,8 +76,8 @@ public class GatlingStrategy implements WeaponAIStrategy {
         float yaw = mob.getViewYRot(1.0F);
         float pitch = mob.getViewXRot(1.0F);
         
-        float pitchOffset = InaccuracyHelper.getPitchOffset(mob.getRandom());
-        float yawOffset = InaccuracyHelper.getYawOffset(mob.getRandom());
+        float pitchOffset = InaccuracyHelper.getPitchOffset(mob.getRandom(), mob);
+        float yawOffset = InaccuracyHelper.getYawOffset(mob.getRandom(), mob);
         
         float finalYaw = yaw + yawOffset;
         float finalPitch = pitch + pitchOffset;

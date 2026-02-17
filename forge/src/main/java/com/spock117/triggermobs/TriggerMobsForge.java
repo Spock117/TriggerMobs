@@ -1,6 +1,7 @@
 package com.spock117.triggermobs;
 
 import com.spock117.triggermobs.config.TriggerMobsConfig;
+import com.spock117.triggermobs.spawn.GunPicker;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -29,6 +30,7 @@ public class TriggerMobsForge {
     @SubscribeEvent
     public void onConfigLoad(ModConfigEvent.Loading event) {
         if (event.getConfig().getModId().equals(TriggerMobs.MOD_ID) && event.getConfig().getType() == ModConfig.Type.COMMON) {
+            GunPicker.invalidateWeaponOverrideCache();
             updateConfigValues();
         }
     }
@@ -36,6 +38,7 @@ public class TriggerMobsForge {
     @SubscribeEvent
     public void onConfigReload(ModConfigEvent.Reloading event) {
         if (event.getConfig().getModId().equals(TriggerMobs.MOD_ID) && event.getConfig().getType() == ModConfig.Type.COMMON) {
+            GunPicker.invalidateWeaponOverrideCache();
             updateConfigValues();
         }
     }
@@ -75,25 +78,21 @@ public class TriggerMobsForge {
                 TriggerMobs.baseAttackIntervalTicks = baseInterval;
                 TriggerMobs.attackIntervalVariance = variance;
                 
-                // Load accuracy config
-                if (TriggerMobsConfig.COMMON.tier1Probability != null) {
-                    double tier1Prob = TriggerMobsConfig.COMMON.tier1Probability.get();
-                    
-                    // Validate range (should already be validated by config, but defensive check)
-                    if (tier1Prob < 0.0 || tier1Prob > 1.0) {
-                        TriggerMobs.LOGGER.warn("tier1Probability value {} is out of range (0.0-1.0), using default 0.125", tier1Prob);
-                        tier1Prob = 0.125;
-                    }
-                    
-                    TriggerMobs.tier1Probability = (float) tier1Prob;
-                    TriggerMobs.LOGGER.info("TriggerMobs config loaded and applied: baseAttackIntervalTicks={}, attackIntervalVariance={}, tier1Probability={} (tier2Probability={})", 
-                        TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance, 
-                        TriggerMobs.tier1Probability, 1.0f - TriggerMobs.tier1Probability);
-                } else {
-                    TriggerMobs.tier1Probability = 0.125f; // Default
-                    TriggerMobs.LOGGER.info("TriggerMobs config loaded and applied: baseAttackIntervalTicks={}, attackIntervalVariance={}, tier1Probability={} (default)", 
-                        TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance, TriggerMobs.tier1Probability);
+                if (TriggerMobsConfig.COMMON.aiAccuracyNerf != null) {
+                    TriggerMobs.aiAccuracyNerf = TriggerMobsConfig.COMMON.aiAccuracyNerf.get().floatValue();
                 }
+                if (TriggerMobsConfig.COMMON.guardAccuracyNerf != null) {
+                    TriggerMobs.guardAccuracyNerf = TriggerMobsConfig.COMMON.guardAccuracyNerf.get().floatValue();
+                }
+                if (TriggerMobsConfig.COMMON.aiReactionDelayTicks != null) {
+                    TriggerMobs.aiReactionDelayTicks = TriggerMobsConfig.COMMON.aiReactionDelayTicks.get();
+                }
+                if (TriggerMobsConfig.COMMON.outOfAmmoFallbackTicks != null) {
+                    TriggerMobs.outOfAmmoFallbackTicks = TriggerMobsConfig.COMMON.outOfAmmoFallbackTicks.get();
+                }
+                TriggerMobs.LOGGER.info("TriggerMobs config loaded: baseAttackIntervalTicks={}, attackIntervalVariance={}, aiAccuracyNerf={}, guardAccuracyNerf={}, aiReactionDelayTicks={}, outOfAmmoFallbackTicks={}",
+                    TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance,
+                    TriggerMobs.aiAccuracyNerf, TriggerMobs.guardAccuracyNerf, TriggerMobs.aiReactionDelayTicks, TriggerMobs.outOfAmmoFallbackTicks);
             } else {
                 throw new NullPointerException("Config not initialized - COMMON or baseAttackIntervalTicks is null");
             }
@@ -101,8 +100,11 @@ public class TriggerMobsForge {
             // Fallback to hardcoded defaults if config can't be read
             TriggerMobs.baseAttackIntervalTicks = 200;
             TriggerMobs.attackIntervalVariance = 80;
-            TriggerMobs.tier1Probability = 0.125f;
-            TriggerMobs.LOGGER.error("Failed to load TriggerMobs config, using defaults: baseAttackIntervalTicks=200, attackIntervalVariance=80, tier1Probability=0.125. Error: {}", e.getMessage());
+            TriggerMobs.aiAccuracyNerf = 1.0f;
+            TriggerMobs.guardAccuracyNerf = 0.7f;
+            TriggerMobs.aiReactionDelayTicks = 0;
+            TriggerMobs.outOfAmmoFallbackTicks = 100;
+            TriggerMobs.LOGGER.error("Failed to load TriggerMobs config, using defaults. Error: {}", e.getMessage());
             e.printStackTrace();
         }
     }

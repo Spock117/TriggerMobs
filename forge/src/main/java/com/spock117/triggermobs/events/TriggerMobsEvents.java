@@ -4,10 +4,14 @@ import com.nukateam.ntgl.common.data.WeaponData;
 import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
 import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.spock117.triggermobs.TriggerMobs;
+import com.spock117.triggermobs.config.TriggerMobsConfig;
 import com.spock117.triggermobs.goals.MobGunAttackGoal;
+import com.spock117.triggermobs.spawn.GunPicker;
 import com.spock117.triggermobs.util.ModDetectionHelper;
 import com.spock117.triggermobs.util.MobItemPickupHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -17,6 +21,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -47,11 +53,12 @@ public class TriggerMobsEvents {
         "guardvillagers:guard"
     );
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOW)
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         // Only handle on server side (works in both single-player and multiplayer)
         // In single-player, Minecraft runs an integrated server, so this code still executes
         // We skip client-side only to avoid duplicate goal registration
+        // LOW priority so we run after TConstruct-Emergence (avoids conflicts)
         if (event.getLevel().isClientSide()) {
             return;
         }
@@ -61,6 +68,21 @@ public class TriggerMobsEvents {
             ResourceLocation entityTypeKey = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
             if (entityTypeKey != null && MOBS_WITH_LOOT_PICKUP.contains(entityTypeKey.toString())) {
                 mob.setCanPickUpLoot(true);
+            }
+        }
+        
+        // CGS gun spawning: equip mobs with Create:Gunsmithing weapons (after TC-E to avoid conflicts)
+        if (event.getEntity() instanceof PathfinderMob pathfinderMob) {
+            if (!pathfinderMob.getPersistentData().getBoolean("apoth.boss")) {
+                if (GunPicker.isAlreadyChecked(pathfinderMob)) {
+                    // Already processed - goal is already added by Monster/Guard block below
+                } else {
+                    GunPicker.markChecked(pathfinderMob);
+                    if (!GunPicker.shouldSkipCGSAssignment(pathfinderMob)
+                            && ModDetectionHelper.isCreateGunsmithingLoaded()) {
+                        GunPicker.tryAssignWeapon(pathfinderMob);
+                    }
+                }
             }
         }
         
@@ -84,6 +106,67 @@ public class TriggerMobsEvents {
                 // Silently handle errors
             }
         }
+    }
+
+    private static final String CGS_NAMESPACE = "cgs";
+    private static final String TAG_APPLIED = "triggermobs_cgs_applied";
+
+    /**
+     * Force CGS weapon drops using dropChanceOverride so drops are reliable regardless of
+     * vanilla/Guard loot logic. Removes any existing drop of the same weapon to avoid duplicates,
+     * then adds our drop if the roll passes.
+     */
+    @SubscribeEvent
+    public static void onLivingDrops(LivingDropsEvent event) {
+        if (event.getEntity().level().isClientSide()) {
+            return;
+        }
+        LivingEntity entity = event.getEntity();
+        if (!(entity instanceof PathfinderMob) || !entity.getTags().contains(TAG_APPLIED)) {
+            return;
+        }
+        if (!ModDetectionHelper.isCreateGunsmithingLoaded()) {
+            return;
+        }
+        // Guards drop from guardInventory in their own dropCustomDeathLoot; we don't add here to avoid double drop
+        ResourceLocation typeId = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        if (typeId != null && "guardvillagers:guard".equals(typeId.toString())) {
+            return;
+        }
+        double dropChance = TriggerMobsConfig.COMMON.dropChanceOverride.get();
+        ItemStack mainHand = entity.getMainHandItem();
+        ItemStack offHand = entity.getOffhandItem();
+        if (mainHand.isEmpty() && offHand.isEmpty()) {
+            return;
+        }
+        var drops = event.getDrops();
+        // Remove any existing drop that matches our CGS weapons (e.g. from Guard's dropCustomDeathLoot)
+        drops.removeIf(itemEntity -> {
+            ItemStack stack = itemEntity.getItem();
+            if (stack.isEmpty()) return false;
+            ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+            if (id == null || !CGS_NAMESPACE.equals(id.getNamespace())) return false;
+            return ItemStack.isSameItemSameTags(stack, mainHand) || ItemStack.isSameItemSameTags(stack, offHand);
+        });
+        var random = entity.getRandom();
+        double x = entity.getX();
+        double y = entity.getY();
+        double z = entity.getZ();
+        Level level = entity.level();
+        if (!mainHand.isEmpty() && isCgsWeapon(mainHand) && random.nextDouble() < dropChance) {
+            drops.add(new ItemEntity(level, x, y, z, mainHand.copy()));
+            entity.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        }
+        if (!offHand.isEmpty() && isCgsWeapon(offHand) && random.nextDouble() < dropChance) {
+            drops.add(new ItemEntity(level, x, y, z, offHand.copy()));
+            entity.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+        }
+    }
+
+    private static boolean isCgsWeapon(ItemStack stack) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof IWeapon)) return false;
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        return id != null && CGS_NAMESPACE.equals(id.getNamespace());
     }
     
     /**
