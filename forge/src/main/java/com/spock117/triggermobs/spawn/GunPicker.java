@@ -83,6 +83,16 @@ public class GunPicker {
     }
 
     /**
+     * Returns whether the mob is eligible for CGS weapon assignment (in valid_gun_mobs tag or mobWeaponOverrides).
+     * Used by TC-E bow-mob split to decide if we handle the mob at HIGH priority.
+     */
+    public static boolean isEligibleForCGS(PathfinderMob mob) {
+        if (isGuard(mob)) return false;
+        String mobId = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType()).toString();
+        return mob.getType().is(VALID_GUN_MOBS) || getParsedOverrides().containsKey(mobId);
+    }
+
+    /**
      * Checks if mob has already been processed by CGS spawning.
      */
     public static boolean isAlreadyChecked(PathfinderMob mob) {
@@ -115,6 +125,14 @@ public class GunPicker {
      * Guards use guardCgsSpawningEnabled, guardWeaponChance, and guard weapon pool from mobWeaponOverrides.
      */
     public static boolean tryAssignWeapon(PathfinderMob mob) {
+        return tryAssignWeapon(mob, false);
+    }
+
+    /**
+     * Same as tryAssignWeapon but when skipChanceRoll is true, the weaponChance roll is skipped for non-guards.
+     * Used when the caller has already decided this mob should get a CGS weapon (e.g. TC-E bow-mob split).
+     */
+    public static boolean tryAssignWeapon(PathfinderMob mob, boolean skipChanceRoll) {
         if (!TriggerMobsConfig.COMMON.cgsSpawningEnabled.get()) {
             return false;
         }
@@ -129,7 +147,7 @@ public class GunPicker {
                 return false;
             }
         } else {
-            if (mob.getRandom().nextDouble() > TriggerMobsConfig.COMMON.weaponChance.get()) {
+            if (!skipChanceRoll && mob.getRandom().nextDouble() > TriggerMobsConfig.COMMON.weaponChance.get()) {
                 return false;
             }
             boolean inTag = mob.getType().is(VALID_GUN_MOBS);

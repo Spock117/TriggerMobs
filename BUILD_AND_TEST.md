@@ -89,7 +89,9 @@ The mod includes run configurations. You can run directly from Gradle:
    - ✅ All hostile mobs should work (zombies, pillagers, vindicators, etc.)
    - ✅ **CGS Gun Spawning (v1.3.0)**: With Create:Gunsmithing, mobs spawn with CGS guns per `weaponChance` and `mobWeaponOverrides`. Check config `cgsSpawningEnabled`, `weaponChance`.
    - ✅ **Guard CGS Spawning (v1.3.0)**: With Guard Villagers + CGS, guards spawn with CGS guns per `guardWeaponChance`. Check `guardCgsSpawningEnabled`.
-   - ✅ **Smart Item Pickup (v1.1.0)**: Mobs should only pick up weapons/tools, drop other items
+   - ✅ **Smart Item Pickup (v1.1.0)**: Mobs should only pick up weapons/tools, drop other items.
+   - ✅ **TConstruct-Emergence (v1.3.2)**: With TConstruct-Emergence, skeletons/mobs that spawn with TConstruct tools (e.g. longbow) should keep them; TriggerMobs does not strip `tconstruct:modifiable` or addon (Tinkers-Rapier, TinkersKatanas) weapons.
+   - ✅ **TC-E bow-mob split (v1.3.2)**: With `vanillaWeaponsRemoved` true and CGS + TC-E loaded: skeleton/stray/wither_skeleton should always have a weapon (weaponChance = CGS, rest = TC-E longbow). With `vanillaWeaponsRemoved` false, split is disabled.
    - ✅ **Dual-Wielding (v1.1.0)**: Mobs can dual-wield one-handed weapons when picking up compatible weapons
    - ✅ **Create:Gunsmithing AI (v1.1.0)**: If Create:Gunsmithing is installed, mobs should use weapon-specific AI behaviors
 
@@ -102,6 +104,8 @@ The mod includes run configurations. You can run directly from Gradle:
    - **Dual-Wielding (v1.1.0)**: Give a mob a one-handed weapon, then drop another compatible one-handed weapon nearby - it should dual-wield.
    - **Create:Gunsmithing (v1.1.0)**: If Create:Gunsmithing is installed, test different weapon types (flintlock, shotgun, gatling, etc.) to verify weapon-specific behaviors.
    - **CGS Spawning (v1.3.0)**: Create a world and spawn zombies/skeletons; some should spawn with CGS guns. Adjust `weaponChance` in config to test. For guards, ensure `guardCgsSpawningEnabled` and `guardWeaponChance` work.
+   - **TConstruct-Emergence (v1.3.2)**: With TConstruct-Emergence installed, spawn skeletons; they should keep TConstruct longbows (or other TC tools) and not end up empty-handed. Mobs with Tinkers-Rapier or TinkersKatanas weapons should also keep them. 
+   - **TC-E bow-mob split (v1.3.2)**: Set `vanillaWeaponsRemoved` to true; spawn skeletons/strays/wither_skeletons—all should have either a CGS gun or TC-E longbow. Set `vanillaWeaponsRemoved` to false and confirm the split no longer applies (normal weaponChance/TC-E chance).
 
 ## Deployment
 

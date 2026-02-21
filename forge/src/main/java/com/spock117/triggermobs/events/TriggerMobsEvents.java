@@ -6,6 +6,7 @@ import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.spock117.triggermobs.TriggerMobs;
 import com.spock117.triggermobs.config.TriggerMobsConfig;
 import com.spock117.triggermobs.goals.MobGunAttackGoal;
+import com.spock117.triggermobs.integration.TCEmergenceIntegration;
 import com.spock117.triggermobs.spawn.GunPicker;
 import com.spock117.triggermobs.util.ModDetectionHelper;
 import com.spock117.triggermobs.util.MobItemPickupHelper;
@@ -52,6 +53,53 @@ public class TriggerMobsEvents {
         "minecraft:zombified_piglin",
         "guardvillagers:guard"
     );
+
+    /** TC-E bow targets (skeleton, stray, wither_skeleton): when tceBowMobsAlwaysArmed we split weaponChance CGS / (1-weaponChance) TC-E longbow. */
+    private static final Set<String> TCE_BOW_MOB_IDS = Set.of(
+        "minecraft:skeleton",
+        "minecraft:stray",
+        "minecraft:wither_skeleton"
+    );
+
+    /**
+     * HIGH priority: for TC-E bow mobs (skeleton/stray/wither_skeleton), when vanillaWeaponsRemoved and TC-E loaded,
+     * assign weaponChance CGS and (1-weaponChance) TC-E longbow so they always have a weapon without raising TC-E global weaponChance.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onEntityJoinLevelHigh(EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide()) {
+            return;
+        }
+        if (!(event.getEntity() instanceof PathfinderMob pathfinderMob)) {
+            return;
+        }
+        if (pathfinderMob.getPersistentData().getBoolean("apoth.boss")) {
+            return;
+        }
+        if (!TriggerMobsConfig.COMMON.cgsSpawningEnabled.get()
+                || !TriggerMobsConfig.COMMON.vanillaWeaponsRemoved.get()
+                || !ModDetectionHelper.isTConstructEmergenceLoaded()
+                || !ModDetectionHelper.isCreateGunsmithingLoaded()) {
+            return;
+        }
+        ResourceLocation typeId = ForgeRegistries.ENTITY_TYPES.getKey(pathfinderMob.getType());
+        if (typeId == null || !TCE_BOW_MOB_IDS.contains(typeId.toString())) {
+            return;
+        }
+        if (GunPicker.isAlreadyChecked(pathfinderMob)) {
+            return;
+        }
+        if (!GunPicker.isEligibleForCGS(pathfinderMob)) {
+            return;
+        }
+        GunPicker.markChecked(pathfinderMob);
+        double roll = pathfinderMob.getRandom().nextDouble();
+        if (roll < TriggerMobsConfig.COMMON.weaponChance.get()) {
+            GunPicker.tryAssignWeapon(pathfinderMob, true);
+        } else {
+            TCEmergenceIntegration.tryAssignLongbow(pathfinderMob);
+        }
+    }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {

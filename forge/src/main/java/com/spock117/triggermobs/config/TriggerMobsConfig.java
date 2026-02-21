@@ -30,6 +30,7 @@ public class TriggerMobsConfig {
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> mobWeaponOverrides;
         public final ForgeConfigSpec.BooleanValue guardCgsSpawningEnabled;
         public final ForgeConfigSpec.DoubleValue guardWeaponChance;
+        public final ForgeConfigSpec.BooleanValue vanillaWeaponsRemoved;
 
         // AI nerf options
         public final ForgeConfigSpec.DoubleValue aiAccuracyNerf;
@@ -103,6 +104,10 @@ public class TriggerMobsConfig {
             this.guardWeaponChance = builder
                 .comment("Probability that a guard spawns with a CGS gun. Range: 0.0 to 1.0. Default 0.35 (higher than regular mobs).")
                 .defineInRange("guardWeaponChance", 0.35, 0.0, 1.0);
+
+            this.vanillaWeaponsRemoved = builder
+                .comment("Set to true if vanilla weapons (e.g. bows, swords) are removed from mob loot/spawn by another mod or datapack. When true and TConstruct-Emergence is loaded, skeleton/stray/wither_skeleton always get a weapon: weaponChance = CGS, rest = TC-E longbow. Keeps bow mobs armed without raising TC-E global weaponChance. Default false.")
+                .define("vanillaWeaponsRemoved", false);
 
             builder.pop();
 

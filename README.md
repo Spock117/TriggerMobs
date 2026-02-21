@@ -96,6 +96,8 @@ The project build files have been updated to remove Manifold. If you're building
 ## Compatibility
 
 - **Guard Villagers:** Optional. If Guard Villagers is installed, guards will use NTGL and Create:Gunsmithing guns when they have a target (hostile mobs, angry-at players, village defenders). Guards get the same gun behavior as hostile mobs (strafing, reload, weapon-specific AI). For development builds, placing the Guard Villagers JAR in `common/libs/` (e.g. `guardvillagers-*.jar`) enables optional compile-time support.
+- **TConstruct-Emergence / Tinkers addons:** When [TConstruct-Emergence](https://www.curseforge.com/minecraft/mc-mods/tconstruct-emergence) (or similar) equips mobs with Tinkers' Construct tools (e.g. skeletons with longbows), TriggerMobs recognizes those as weapons and does not drop them. Only items in the `tconstruct:modifiable` tag (actual tools/weapons) are treated as weapons—not materials, casts, or other TConstruct items. Addon weapons from **Tinkers-Rapier** and **TinkersKatanas** (and other addons that register to TConstruct tags or use namespaces `tinker_rapier` / `tinkerskatanas`) are also recognized so mobs keep them.
+- **TC-E bow-mob split (vanilla weapons removed):** When vanilla weapons (e.g. bows) are removed from mob loot by another mod or datapack, set **`vanillaWeaponsRemoved`** to true in config. Skeleton/stray/wither_skeleton then always get a weapon: **weaponChance** (e.g. 0.2) get CGS guns, the rest get a TConstruct-Emergence longbow. This keeps bow mobs armed without raising TC-E’s global weaponChance (which would over-arm zombies). If `vanillaWeaponsRemoved` is false, the split is disabled and normal chances apply.
 - **Recruiting with guns:** TriggerMobs adds NTGL/Create:Gunsmithing weapons to Guard Villagers’ “convertible” item tag. You can **right-click a villager while crouching** with an NTGL gun (e.g. flintlock, revolver, shotgun) to convert them into a guard **holding that gun**. Works with all Create:Gunsmithing weapons. Other NTGL gun packs can be supported by adding their items to the tag `guardvillagers:convertible_guard_items` via a datapack.
 - **Guard spawn equipment:** When Guard Villagers is installed, TriggerMobs **overrides** the guard equipment loot table. By default (Guard Villagers’ loot table `guardvillagers:entities/guard_armor`), guards spawn with:
   - **Main hand:** CGS guns (from TriggerMobs config) or TConstruct/other from datapack
@@ -109,6 +111,16 @@ The project build files have been updated to remove Manifold. If you're building
 - **Gun pack is required** - Add a gun pack that uses NTGL
 
 ## Changelog
+
+### Version 1.3.2
+
+- **TC-E bow-mob split:** When **`vanillaWeaponsRemoved`** is true and TConstruct-Emergence + Create:Gunsmithing are loaded, skeleton/stray/wither_skeleton always get a weapon: `weaponChance` (e.g. 0.2) get CGS, the rest get TC-E longbow. Use when a mod or datapack removes vanilla bows so bow mobs stay armed without raising TC-E’s global weaponChance.
+- **TConstruct-Emergence / Tinkers compatibility:** Smart item pickup now treats only TConstruct **tools/weapons** as weapons (via `tconstruct:modifiable` tag), not all TConstruct items (materials, casts, etc.). Fixes mobs (e.g. skeletons) spawning without weapons when TConstruct-Emergence had equipped them—TriggerMobs no longer strips those items. Addon weapons from **Tinkers-Rapier** and **TinkersKatanas** are also recognized (tag or namespaces `tinker_rapier`, `tinkerskatanas`).
+
+### Version 1.3.1
+
+- **NTGL cooldown fix:** All weapon strategies enforce attack delay ≥ weapon rate + 3 ticks (with non-negative variance) to prevent "tried to fire before cooldown finished" warnings from NTGL. AttachmentAwareStrategy and GenericWeaponStrategy updated accordingly.
+- **Mod metadata:** Built mod now shows correct description, CurseForge display URL, and GitHub issue tracker URL in mod list.
 
 ### Version 1.3.0
 

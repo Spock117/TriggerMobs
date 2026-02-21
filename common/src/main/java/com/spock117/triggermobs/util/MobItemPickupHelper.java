@@ -2,7 +2,9 @@ package com.spock117.triggermobs.util;
 
 import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -30,7 +32,12 @@ public class MobItemPickupHelper {
         "minecraft:zombified_piglin",
         "guardvillagers:guard"
     );
-    
+
+    /** TConstruct tag for modifiable tools/weapons only (excludes materials, casts, etc.). Addons (e.g. Tinkers-Rapier) add their tools here via TinkerTags. */
+    private static final TagKey<Item> TC_MODIFIABLE_TOOLS = TagKey.create(Registries.ITEM, ResourceLocation.parse("tconstruct:modifiable"));
+    /** TConstruct addon mod namespaces whose items are tools/weapons (e.g. Tinkers-Rapier, TinkersKatanas). */
+    private static final Set<String> TC_ADDON_NAMESPACES = Set.of("tinker_rapier", "tinkerskatanas");
+
     /**
      * Checks if the mob should have custom item pickup behavior.
      */
@@ -57,7 +64,15 @@ public class MobItemPickupHelper {
         if (item instanceof IWeapon) {
             return true;
         }
-        
+        // TConstruct (and TConstruct-Emergence) tools/weapons only - use tag so we don't treat materials/parts as weapons
+        if (itemStack.is(TC_MODIFIABLE_TOOLS)) {
+            return true;
+        }
+        // TConstruct addon weapons (Tinkers-Rapier, TinkersKatanas, etc.) - addons register tools in their own namespace
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
+        if (id != null && TC_ADDON_NAMESPACES.contains(id.getNamespace())) {
+            return true;
+        }
         // FIRST: Exclude tools that are clearly not weapons
         // This must come before checking for TieredItem/DiggerItem
         if (item instanceof PickaxeItem || 
