@@ -85,6 +85,7 @@ The mod includes run configurations. You can run directly from Gradle:
    - ✅ Mobs should automatically use guns when holding them
    - ✅ Mobs should auto-reload when ammo runs out
    - ✅ Mobs should have configurable inaccuracy (see `aiAccuracyNerf`, `guardAccuracyNerf` in config)
+   - ✅ **Fire rate (v1.3.3)**: Mobs' firing speed is configurable via `fireRateDelayMultiplier` (default 4.0). Lower = faster, higher = slower; min 1.0.
    - ✅ Mobs should strafe while shooting
    - ✅ All hostile mobs should work (zombies, pillagers, vindicators, etc.)
    - ✅ **CGS Gun Spawning (v1.3.0)**: With Create:Gunsmithing, mobs spawn with CGS guns per `weaponChance` and `mobWeaponOverrides`. Check config `cgsSpawningEnabled`, `weaponChance`.
@@ -197,7 +198,10 @@ triggermobs/
 ## Version 1.3.0 Changes
 
 - **CGS Gun Spawning**: Mobs and guards spawn with Create:Gunsmithing weapons. Config: `cgsSpawningEnabled`, `weaponChance`, `guardCgsSpawningEnabled`, `guardWeaponChance`, `mobWeaponOverrides`, `dualWieldChance`, `maxAttachmentSlots`, etc.
-- **Accuracy Config**: `aiAccuracyNerf` (mobs), `guardAccuracyNerf` (guards). Config file: `config/triggermobs-common.toml`.## Version 1.1.0 Changes### Architecture Changes
+- **Accuracy Config**: `aiAccuracyNerf` (mobs), `guardAccuracyNerf` (guards). Config file: `config/triggermobs-common.toml`.
+- **Fire rate (v1.3.3)**: `fireRateDelayMultiplier` (default 4.0, min 1.0) multiplies delay between shots for all mobs.
+
+## Version 1.1.0 Changes### Architecture Changes
 - **Replaced Mixin system with Forge events** for mob item pickup behavior
 - Item pickup logic now handled in `TriggerMobsEvents.onLevelTick` event handler
 - More reliable and maintainable than the previous Mixin approach### New Features to Test

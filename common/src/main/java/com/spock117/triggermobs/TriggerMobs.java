@@ -13,6 +13,8 @@ public class TriggerMobs {
     public static float aiAccuracyNerf = 1.0f; // 1.0 = baseline inaccuracy, higher = dumber zombies
     public static float guardAccuracyNerf = 0.7f; // Separate nerf for guard villagers (typically more skilled)
     public static int aiReactionDelayTicks = 0;
+    /** Multiplier for attack delay (fire rate). > 1.0 = slower firing. Default 4.0. */
+    public static double fireRateDelayMultiplier = 4.0;
     public static int outOfAmmoFallbackTicks = 100;
 
     public static void init() {

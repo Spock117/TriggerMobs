@@ -112,6 +112,10 @@ The project build files have been updated to remove Manifold. If you're building
 
 ## Changelog
 
+### Version 1.3.3
+
+- **Configurable fire rate**: New `fireRateDelayMultiplier` in config (default 4.0, min 1.0). Multiplies the delay between shots for all mobs and weapon types—higher values slow down firing. Use this if mobs fire too fast.
+
 ### Version 1.3.2
 
 - **TC-E bow-mob split:** When **`vanillaWeaponsRemoved`** is true and TConstruct-Emergence + Create:Gunsmithing are loaded, skeleton/stray/wither_skeleton always get a weapon: `weaponChance` (e.g. 0.2) get CGS, the rest get TC-E longbow. Use when a mod or datapack removes vanilla bows so bow mobs stay armed without raising TC-E’s global weaponChance.
@@ -128,7 +132,7 @@ The project build files have been updated to remove Manifold. If you're building
 - **Guard CGS Spawning**: Separate config for guards: `guardCgsSpawningEnabled`, `guardWeaponChance` (0.35). Guards can overwrite TConstruct weapons with CGS. When enabled, TriggerMobs removes CGS pools from `guard_armor` loot table. Default guard weapon pool: flintlock, revolver, shotgun, nailgun, gatling, blazegun, launcher.
 - **Guard Accuracy Nerf**: New `guardAccuracyNerf` (default 0.7) for guard villagers. Guards use this instead of `aiAccuracyNerf` for shooting spread.
 - **Accuracy Config**: `aiAccuracyNerf` (1.0 = ±4–8° baseline). Higher = more inaccurate, lower = more accurate.
-- **Other AI Config**: `aiReactionDelayTicks`, `outOfAmmoFallbackTicks` for fallback when ammo runs out.
+- **Other AI Config**: `aiReactionDelayTicks`, `fireRateDelayMultiplier` (default 4.0, slows firing when > 1.0), `outOfAmmoFallbackTicks` for fallback when ammo runs out.
 
 ### Version 1.2.0
 

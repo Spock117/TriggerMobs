@@ -36,6 +36,7 @@ public class TriggerMobsConfig {
         public final ForgeConfigSpec.DoubleValue aiAccuracyNerf;
         public final ForgeConfigSpec.DoubleValue guardAccuracyNerf;
         public final ForgeConfigSpec.IntValue aiReactionDelayTicks;
+        public final ForgeConfigSpec.DoubleValue fireRateDelayMultiplier;
         public final ForgeConfigSpec.IntValue outOfAmmoFallbackTicks;
         
         public Common(ForgeConfigSpec.Builder builder) {
@@ -64,6 +65,10 @@ public class TriggerMobsConfig {
             this.aiReactionDelayTicks = builder
                 .comment("Extra ticks before mob starts shooting (slower reaction).")
                 .defineInRange("aiReactionDelayTicks", 0, 0, 200);
+
+            this.fireRateDelayMultiplier = builder
+                .comment("Multiplier applied to mob fire rate (attack delay). Values > 1.0 slow down firing. Default 4.0 = 4x longer delay between shots. Applies to all mobs and weapon types.")
+                .defineInRange("fireRateDelayMultiplier", 4.0, 1.0, 20.0);
 
             builder.pop();
 

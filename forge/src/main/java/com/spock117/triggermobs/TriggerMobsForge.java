@@ -87,12 +87,15 @@ public class TriggerMobsForge {
                 if (TriggerMobsConfig.COMMON.aiReactionDelayTicks != null) {
                     TriggerMobs.aiReactionDelayTicks = TriggerMobsConfig.COMMON.aiReactionDelayTicks.get();
                 }
+                if (TriggerMobsConfig.COMMON.fireRateDelayMultiplier != null) {
+                    TriggerMobs.fireRateDelayMultiplier = TriggerMobsConfig.COMMON.fireRateDelayMultiplier.get();
+                }
                 if (TriggerMobsConfig.COMMON.outOfAmmoFallbackTicks != null) {
                     TriggerMobs.outOfAmmoFallbackTicks = TriggerMobsConfig.COMMON.outOfAmmoFallbackTicks.get();
                 }
-                TriggerMobs.LOGGER.info("TriggerMobs config loaded: baseAttackIntervalTicks={}, attackIntervalVariance={}, aiAccuracyNerf={}, guardAccuracyNerf={}, aiReactionDelayTicks={}, outOfAmmoFallbackTicks={}",
+                TriggerMobs.LOGGER.info("TriggerMobs config loaded: baseAttackIntervalTicks={}, attackIntervalVariance={}, aiAccuracyNerf={}, guardAccuracyNerf={}, aiReactionDelayTicks={}, fireRateDelayMultiplier={}, outOfAmmoFallbackTicks={}",
                     TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance,
-                    TriggerMobs.aiAccuracyNerf, TriggerMobs.guardAccuracyNerf, TriggerMobs.aiReactionDelayTicks, TriggerMobs.outOfAmmoFallbackTicks);
+                    TriggerMobs.aiAccuracyNerf, TriggerMobs.guardAccuracyNerf, TriggerMobs.aiReactionDelayTicks, TriggerMobs.fireRateDelayMultiplier, TriggerMobs.outOfAmmoFallbackTicks);
             } else {
                 throw new NullPointerException("Config not initialized - COMMON or baseAttackIntervalTicks is null");
             }
@@ -103,6 +106,7 @@ public class TriggerMobsForge {
             TriggerMobs.aiAccuracyNerf = 1.0f;
             TriggerMobs.guardAccuracyNerf = 0.7f;
             TriggerMobs.aiReactionDelayTicks = 0;
+            TriggerMobs.fireRateDelayMultiplier = 4.0;
             TriggerMobs.outOfAmmoFallbackTicks = 100;
             TriggerMobs.LOGGER.error("Failed to load TriggerMobs config, using defaults. Error: {}", e.getMessage());
             e.printStackTrace();

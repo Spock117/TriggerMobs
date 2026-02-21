@@ -284,7 +284,9 @@ public class MobGunAttackGoal extends Goal {
             // Calculate attack delay using strategy
             WeaponData weaponData = new WeaponData(weaponToUse, mob);
             int calculatedDelay = currentStrategy.getAttackDelay(mob, weaponData);
-            
+            // Apply configurable fire rate multiplier (applies to all mobs)
+            calculatedDelay = Math.max(1, (int) Math.ceil(calculatedDelay * TriggerMobs.fireRateDelayMultiplier));
+
             // For dual wielding, halve the delay
             if (isDualWielding) {
                 calculatedDelay = calculatedDelay / 2;
