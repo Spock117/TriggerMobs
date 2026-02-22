@@ -10,7 +10,10 @@ import com.spock117.triggermobs.integration.TCEmergenceIntegration;
 import com.spock117.triggermobs.spawn.GunPicker;
 import com.spock117.triggermobs.util.ModDetectionHelper;
 import com.spock117.triggermobs.util.MobItemPickupHelper;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -28,6 +31,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 
@@ -97,7 +101,29 @@ public class TriggerMobsEvents {
         if (roll < TriggerMobsConfig.COMMON.weaponChance.get()) {
             GunPicker.tryAssignWeapon(pathfinderMob, true);
         } else {
-            TCEmergenceIntegration.tryAssignLongbow(pathfinderMob);
+            if (net.minecraftforge.fml.ModList.get().isLoaded("tcmobarmor") && net.minecraftforge.fml.ModList.get().isLoaded("tinkers_things")) {
+                if (tryTCMobArmorRangedFromPool(pathfinderMob)) {
+                    return;
+                }
+            }
+            if (pathfinderMob.getType().is(TCE_VALID_BOW_MOBS)) {
+                TCEmergenceIntegration.tryAssignLongbow(pathfinderMob);
+            }
+        }
+    }
+
+    private static final TagKey<EntityType<?>> TCE_VALID_BOW_MOBS =
+            TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse("tconstruct_emergence:valid_bow_mobs"));
+
+    /** Calls TCMobArmor's tryAssignRangedFromPool via reflection when both tcmobarmor and tinkers_things are loaded. */
+    private static boolean tryTCMobArmorRangedFromPool(PathfinderMob mob) {
+        try {
+            Class<?> integration = Class.forName("com.spock117.tcmobarmor.integration.TCMobArmorRangedIntegration");
+            Method m = integration.getMethod("tryAssignRangedFromPool", PathfinderMob.class);
+            Object result = m.invoke(null, mob);
+            return Boolean.TRUE.equals(result);
+        } catch (Throwable t) {
+            return false;
         }
     }
 

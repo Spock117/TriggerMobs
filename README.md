@@ -112,6 +112,10 @@ The project build files have been updated to remove Manifold. If you're building
 
 ## Changelog
 
+### Version 1.3.4
+
+- **TCMobArmor + TinkersThings integration:** When **TCMobArmor** and **TinkersThings** are both installed and the TC-E bow-mob split is active (`vanillaWeaponsRemoved` + CGS + TC-E), the “else” branch (mobs that don’t get a CGS gun) now tries TCMobArmor’s weighted ranged pool first via reflection (`tryAssignRangedFromPool`). If that assigns a weapon, done; otherwise if the entity is in `tconstruct_emergence:valid_bow_mobs`, TC-E longbow is assigned. Allows TCMobArmor to drive shortbow/blowpipe/longbow/crossbow/blockram when TC-E ranged is disabled.
+
 ### Version 1.3.3
 
 - **Configurable fire rate**: New `fireRateDelayMultiplier` in config (default 4.0, min 1.0). Multiplies the delay between shots for all mobs and weapon types—higher values slow down firing. Use this if mobs fire too fast.
