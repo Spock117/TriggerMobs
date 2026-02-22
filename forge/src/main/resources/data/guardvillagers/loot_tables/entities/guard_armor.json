@@ -63,17 +63,6 @@
       "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
     },
     {
-      "name": "cgs_blazegun",
-      "rolls": 1,
-      "entries": [{
-        "type": "minecraft:item",
-        "name": "cgs:blazegun",
-        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:200}" }]
-      }],
-      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.03 }],
-      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
-    },
-    {
       "name": "cgs_launcher",
       "rolls": 1,
       "entries": [{

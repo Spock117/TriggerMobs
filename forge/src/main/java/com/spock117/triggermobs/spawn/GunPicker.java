@@ -37,8 +37,8 @@ public class GunPicker {
 
     // Basic one-handed weapons
     private static final String[] BASIC_WEAPONS = {"flintlock", "revolver", "shotgun"};
-    // Advanced weapons (two-handed except shotgun). Nailgun excluded: requires Create fuel, doesn't work for mobs.
-    private static final String[] ADVANCED_WEAPONS = {"gatling", "blazegun", "launcher", "hammer"};
+    // Advanced weapons (two-handed except shotgun). Nailgun excluded: requires Create fuel. Blazegun excluded: not usable by mobs.
+    private static final String[] ADVANCED_WEAPONS = {"gatling", "launcher", "hammer"};
 
     private static final String TAG_CHECKED = "triggermobs_cgs_checked";
     private static final String TAG_APPLIED = "triggermobs_cgs_applied";

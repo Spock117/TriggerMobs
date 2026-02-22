@@ -1,14 +1,1 @@
-{
-  "replace": false,
-  "values": [
-    { "id": "cgs:flintlock", "required": false },
-    { "id": "cgs:revolver", "required": false },
-    { "id": "cgs:shotgun", "required": false },
-    { "id": "cgs:nailgun", "required": false },
-    { "id": "cgs:gatling", "required": false },
-    { "id": "cgs:blazegun", "required": false },
-    { "id": "cgs:launcher", "required": false },
-    { "id": "cgs:hammer", "required": false },
-    { "id": "cgs:frag_grenade", "required": false }
-  ]
-}
+{"replace":false,"values":[{"id":"cgs:flintlock","required":false},{"id":"cgs:revolver","required":false},{"id":"cgs:shotgun","required":false},{"id":"cgs:nailgun","required":false},{"id":"cgs:gatling","required":false},{"id":"cgs:launcher","required":false},{"id":"cgs:hammer","required":false},{"id":"cgs:frag_grenade","required":false}]}

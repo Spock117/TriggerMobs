@@ -103,7 +103,7 @@ The project build files have been updated to remove Manifold. If you're building
   - **Main hand:** CGS guns (from TriggerMobs config) or TConstruct/other from datapack
   - **Off hand:** 10% bread (1–8), or 50% shield
   - **Armor:** from Guard Villagers’ armor set table
-  TriggerMobs handles CGS gun spawning via config (`guardCgsSpawningEnabled`, `guardWeaponChance`, `mobWeaponOverrides` for `guardvillagers:guard`). Guards may spawn with TConstruct weapons from a datapack; TriggerMobs can overwrite main hand with CGS when enabled. When `guardCgsSpawningEnabled` is true, TriggerMobs removes CGS pools from the guard loot table. Armor and off-hand (bread/shield) come from the datapack or Guard Villagers defaults.
+  TriggerMobs handles CGS gun spawning via config (`guardCgsSpawningEnabled`, `guardWeaponChance`, `mobWeaponOverrides` for `guardvillagers:guard`). Blazegun is excluded from guard and mob pools (not usable by mobs). Guards may spawn with TConstruct weapons from a datapack; TriggerMobs can overwrite main hand with CGS when enabled. When `guardCgsSpawningEnabled` is true, TriggerMobs removes CGS pools from the guard loot table. Armor and off-hand (bread/shield) come from the datapack or Guard Villagers defaults.
 
 ## Important Notes
 
@@ -111,6 +111,10 @@ The project build files have been updated to remove Manifold. If you're building
 - **Gun pack is required** - Add a gun pack that uses NTGL
 
 ## Changelog
+
+### Version 1.3.5
+
+- **Blazegun removed from mob/guard pools:** Blazegun is not usable by mobs and has been removed from the CGS spawn pool, default guard weapon override, and Guard Villagers datapack (guard armor loot table and convertible items tag). Guards and other mobs will no longer be assigned blazeguns.
 
 ### Version 1.3.4
 

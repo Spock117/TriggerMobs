@@ -30,7 +30,7 @@ public class GuardLootTableEvents {
     };
     private static final String[] CGS_POOL_NAMES = {
         "cgs_flintlock", "cgs_revolver", "cgs_shotgun", "cgs_nailgun",
-        "cgs_gatling", "cgs_blazegun", "cgs_launcher"
+        "cgs_gatling", "cgs_launcher"
     };
 
     @SubscribeEvent

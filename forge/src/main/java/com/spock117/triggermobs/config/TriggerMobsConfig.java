@@ -95,7 +95,7 @@ public class TriggerMobsConfig {
                 .defineInRange("maxAttachmentSlots", 2, 0, 5);
 
             this.allowAdvancedWeapons = builder
-                .comment("Allow heavy weapons (Gatling, Launcher, Blazegun) or restrict to pistols/shotguns. Used when no mob override matches.")
+                .comment("Allow heavy weapons (Gatling, Launcher) or restrict to pistols/shotguns. Used when no mob override matches. Blazegun excluded: not usable by mobs.")
                 .define("allowAdvancedWeapons", true);
 
             this.mobWeaponOverrides = builder
@@ -140,7 +140,7 @@ public class TriggerMobsConfig {
                 "minecraft:evoker=cgs:shotgun",
                 "minecraft:zombified_piglin=cgs:revolver,cgs:flintlock",
                 "minecraft:witch=cgs:revolver",
-                "guardvillagers:guard=cgs:flintlock,cgs:revolver,cgs:shotgun,cgs:gatling,cgs:blazegun,cgs:launcher"
+                "guardvillagers:guard=cgs:flintlock,cgs:revolver,cgs:shotgun,cgs:gatling,cgs:launcher"
             );
         }
     }
