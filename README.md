@@ -1,6 +1,6 @@
 # TriggerMobs Mod
 
-A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0) equips mobs and guards with guns on spawn—no InControl needed!
+A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0+) equips mobs and guards with Create:Gunsmithing weapons on spawn—no InControl needed. Version 1.4.0 adds **Loot Integrations** compatibility so CGS guns, attachments, and ammo can appear in combat-focused structure chests, fully configurable via the TriggerMobs config.
 
 ## Features
 
@@ -12,6 +12,7 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
 - ✅ **Dual-Wielding Support** (v1.1.0) - One-handed weapons can be dual-wielded when mobs pick up compatible weapons
 - ✅ **Optional Create:Gunsmithing Support** (v1.1.0) - Weapon-specific AI behaviors for Create:Gunsmithing weapons when installed
 - ✅ **Built-in CGS Gun Spawning** (v1.3.0) - Mobs and guards spawn with Create:Gunsmithing weapons. Configurable per-mob weapon pools, dual wield chance, attachments, and drop chance. No InControl or datapack needed for mob CGS spawning.
+- ✅ **Loot Integrations chest loot** (v1.4.0) - Optional integration with [Loot Integrations](https://www.curseforge.com/minecraft/mc-mods/loot-integrations) and its addons: CGS guns, attachments, and ammo are injected into combat/adventure structure chests (vanilla dungeons, pillager outposts, strongholds, Integrated Villages, Underground Villages, etc.) via datapack-style JSONs shipped with TriggerMobs. Controlled by `includeLootGuns`, `includeLootAttachments`, and `includeLootAmmo` in `triggermobs-common.toml`.
 - ✅ **Optional Guard Villagers Support** - When [Guard Villagers](https://www.curseforge.com/minecraft/mc-mods/guard-villagers) is installed, guards can use NTGL and Create:Gunsmithing guns. Guards have separate accuracy (guardAccuracyNerf) and their own CGS spawn config (guardCgsSpawningEnabled, guardWeaponChance).
 
 ## Requirements
@@ -71,7 +72,7 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
 
 ## Building
 
-See [BUILD_AND_TEST.md](BUILD_AND_TEST.md) for detailed build and testing instructions.
+See [BUILD_AND_TEST.md](BUILD_AND_TEST.md) for detailed build and testing instructions, including notes on Loot Integrations/Loot Integrations addons used for chest loot testing.
 
 ### Troubleshooting Build Issues
 
@@ -111,6 +112,11 @@ The project build files have been updated to remove Manifold. If you're building
 - **Gun pack is required** - Add a gun pack that uses NTGL
 
 ## Changelog
+
+### Version 1.4.0
+
+- **Loot Integrations chest loot:** Added optional integration with Loot Integrations and its addon packs. TriggerMobs now ships datapack-style JSONs under the `lootintegrations` namespace that inject CGS guns, CGS attachments, and CGS ammo into combat/adventure structure chests (vanilla dungeons, pillager outposts, strongholds, bastions, ancient cities, Integrated Villages, Underground Villages, etc.). Controlled via new config flags `includeLootGuns`, `includeLootAttachments`, and `includeLootAmmo` in `triggermobs-common.toml`.
+- **CGS-only loot tables:** Introduced internal TriggerMobs loot tables (`triggermobs:loot/triggermobs_loot_guns`, `triggermobs:loot/triggermobs_loot_attachments`, `triggermobs:loot/triggermobs_loot_ammo`) that contain only Create:Gunsmithing weapons, attachments, and ammo (no NTGL base ammo). These are used exclusively as sources for Loot Integrations.
 
 ### Version 1.3.5
 

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {
+        "min": 0,
+        "max": 2
+      },
+      "entries": [
+        { "type": "minecraft:item", "name": "cgs:scope", "weight": 6 },
+        { "type": "minecraft:item", "name": "cgs:flintlock_long_barrel", "weight": 4 },
+        { "type": "minecraft:item", "name": "cgs:flintlock_mortar_barrel", "weight": 3 },
+        { "type": "minecraft:item", "name": "cgs:blunderbuss_barrel", "weight": 4 },
+        { "type": "minecraft:item", "name": "cgs:blunderbuss_barrel_long", "weight": 3 },
+        { "type": "minecraft:item", "name": "cgs:stock", "weight": 5 },
+        { "type": "minecraft:item", "name": "cgs:shotgun_long_barrel", "weight": 3 },
+        { "type": "minecraft:item", "name": "cgs:shotgun_spread_barrel", "weight": 3 },
+        { "type": "minecraft:item", "name": "cgs:shotgun_drum", "weight": 2 },
+        { "type": "minecraft:item", "name": "cgs:nailgun_splitter", "weight": 2 }
+      ]
+    }
+  ]
+}

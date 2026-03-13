@@ -17,6 +17,11 @@ public class TriggerMobs {
     public static double fireRateDelayMultiplier = 4.0;
     public static int outOfAmmoFallbackTicks = 100;
 
+    // Loot Integrations config mirrors (set from Forge side)
+    public static boolean includeLootGuns = true;
+    public static boolean includeLootAttachments = true;
+    public static boolean includeLootAmmo = true;
+
     public static void init() {
         LOGGER.info("TriggerMobs mod initialized");
     }

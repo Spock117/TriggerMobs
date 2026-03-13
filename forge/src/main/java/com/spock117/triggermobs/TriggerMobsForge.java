@@ -93,9 +93,19 @@ public class TriggerMobsForge {
                 if (TriggerMobsConfig.COMMON.outOfAmmoFallbackTicks != null) {
                     TriggerMobs.outOfAmmoFallbackTicks = TriggerMobsConfig.COMMON.outOfAmmoFallbackTicks.get();
                 }
-                TriggerMobs.LOGGER.info("TriggerMobs config loaded: baseAttackIntervalTicks={}, attackIntervalVariance={}, aiAccuracyNerf={}, guardAccuracyNerf={}, aiReactionDelayTicks={}, fireRateDelayMultiplier={}, outOfAmmoFallbackTicks={}",
+                if (TriggerMobsConfig.COMMON.includeLootGuns != null) {
+                    TriggerMobs.includeLootGuns = TriggerMobsConfig.COMMON.includeLootGuns.get();
+                }
+                if (TriggerMobsConfig.COMMON.includeLootAttachments != null) {
+                    TriggerMobs.includeLootAttachments = TriggerMobsConfig.COMMON.includeLootAttachments.get();
+                }
+                if (TriggerMobsConfig.COMMON.includeLootAmmo != null) {
+                    TriggerMobs.includeLootAmmo = TriggerMobsConfig.COMMON.includeLootAmmo.get();
+                }
+                TriggerMobs.LOGGER.info("TriggerMobs config loaded: baseAttackIntervalTicks={}, attackIntervalVariance={}, aiAccuracyNerf={}, guardAccuracyNerf={}, aiReactionDelayTicks={}, fireRateDelayMultiplier={}, outOfAmmoFallbackTicks={}, includeLootGuns={}, includeLootAttachments={}, includeLootAmmo={}",
                     TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance,
-                    TriggerMobs.aiAccuracyNerf, TriggerMobs.guardAccuracyNerf, TriggerMobs.aiReactionDelayTicks, TriggerMobs.fireRateDelayMultiplier, TriggerMobs.outOfAmmoFallbackTicks);
+                    TriggerMobs.aiAccuracyNerf, TriggerMobs.guardAccuracyNerf, TriggerMobs.aiReactionDelayTicks, TriggerMobs.fireRateDelayMultiplier, TriggerMobs.outOfAmmoFallbackTicks,
+                    TriggerMobs.includeLootGuns, TriggerMobs.includeLootAttachments, TriggerMobs.includeLootAmmo);
             } else {
                 throw new NullPointerException("Config not initialized - COMMON or baseAttackIntervalTicks is null");
             }

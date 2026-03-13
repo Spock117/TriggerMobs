@@ -5,6 +5,7 @@
 1. **Java 17** - Required for Minecraft 1.20.1 Forge development
 2. **NukaTeamGunLib (NTGL)** - This mod is a required dependency
 3. **Minecraft 1.20.1 Forge 47.4.0** - The target Minecraft version
+4. *(Optional, for chest loot testing)* **Loot Integrations + addons** (lootintegrations, lootintegrations_vanilla, lootintegrations_integrated, lootintegrations_undergroundvillages, etc.) and **Create:Gunsmithing** to exercise the TriggerMobs Loot Integrations datapack integration.
 
 ## Setup for Development
 
@@ -95,6 +96,7 @@ The mod includes run configurations. You can run directly from Gradle:
    - ✅ **TC-E bow-mob split (v1.3.2)**: With `vanillaWeaponsRemoved` true and CGS + TC-E loaded: skeleton/stray/wither_skeleton should always have a weapon (weaponChance = CGS, rest = TC-E longbow). With `vanillaWeaponsRemoved` false, split is disabled.
    - ✅ **Dual-Wielding (v1.1.0)**: Mobs can dual-wield one-handed weapons when picking up compatible weapons
    - ✅ **Create:Gunsmithing AI (v1.1.0)**: If Create:Gunsmithing is installed, mobs should use weapon-specific AI behaviors
+   - ✅ **Loot Integrations chest loot (v1.4.0)**: With Loot Integrations and its addons installed, and `includeLootGuns/includeLootAttachments/includeLootAmmo` enabled, use `/loot give` on vanilla and addon chest tables (e.g. dungeons, pillager outposts, Integrated Villages, Underground Villages) and verify CGS guns, attachments, and CGS ammo appear in combat/adventure structures only.
 
 3. **Verify behavior:**
    - Mobs should stop and aim when in range

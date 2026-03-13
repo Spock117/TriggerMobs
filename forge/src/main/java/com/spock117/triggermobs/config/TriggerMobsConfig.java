@@ -38,6 +38,11 @@ public class TriggerMobsConfig {
         public final ForgeConfigSpec.IntValue aiReactionDelayTicks;
         public final ForgeConfigSpec.DoubleValue fireRateDelayMultiplier;
         public final ForgeConfigSpec.IntValue outOfAmmoFallbackTicks;
+
+        // Loot Integrations loot toggles
+        public final ForgeConfigSpec.BooleanValue includeLootGuns;
+        public final ForgeConfigSpec.BooleanValue includeLootAttachments;
+        public final ForgeConfigSpec.BooleanValue includeLootAmmo;
         
         public Common(ForgeConfigSpec.Builder builder) {
             builder.comment("TriggerMobs mob attack configuration").push("mob_attack");
@@ -122,6 +127,22 @@ public class TriggerMobsConfig {
                 .comment("Ticks without ammo before falling back to standard mob behavior (melee/ranged). 0 = immediate fallback.")
                 .defineInRange("outOfAmmoFallbackTicks", 100, 0, 600);
             
+            builder.pop();
+
+            builder.comment("Loot Integrations compatibility - chest loot toggles").push("loot_integrations");
+
+            this.includeLootGuns = builder
+                .comment("Include TriggerMobs/NTGL guns in Loot Integrations chest loot (where enabled by datapack JSON).")
+                .define("includeLootGuns", true);
+
+            this.includeLootAttachments = builder
+                .comment("Include TriggerMobs/NTGL attachments in Loot Integrations chest loot.")
+                .define("includeLootAttachments", true);
+
+            this.includeLootAmmo = builder
+                .comment("Include ammo items (e.g., NTGL rounds, shotshells, arrows) in Loot Integrations chest loot.")
+                .define("includeLootAmmo", true);
+
             builder.pop();
         }
 
