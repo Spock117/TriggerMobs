@@ -1,6 +1,6 @@
 # TriggerMobs Mod
 
-A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0+) equips mobs and guards with Create:Gunsmithing weapons on spawn—no InControl needed. Version 1.4.0 adds **Loot Integrations** compatibility so CGS guns, attachments, and ammo can appear in combat-focused structure chests, fully configurable via the TriggerMobs config.
+A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0+) equips mobs and guards with Create:Gunsmithing weapons on spawn—no InControl needed. Version 1.4.0 adds **Loot Integrations** compatibility so CGS guns, attachments, and ammo can appear in combat-focused structure chests, fully configurable via the TriggerMobs config. Version 1.4.1 refines CGS integration with a revolver-based guard fallback and richer ammo chest loot for all CGS weapons.
 
 ## Features
 
@@ -112,6 +112,10 @@ The project build files have been updated to remove Manifold. If you're building
 - **Gun pack is required** - Add a gun pack that uses NTGL
 
 ## Changelog
+
+### Version 1.4.1
+
+- **Ammo loot:** Expanded the `triggermobs:loot/triggermobs_loot_ammo` table to include ammo for all supported CGS weapons (revolver, shotgun, nailgun, gatling, blazegun, launcher) with weighted chances and stack sizes based on tech level and power.
 
 ### Version 1.4.0
 
