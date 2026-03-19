@@ -1,6 +1,6 @@
 # TriggerMobs Mod
 
-A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0+) equips mobs and guards with Create:Gunsmithing weapons on spawn—no InControl needed. Version 1.4.0 adds **Loot Integrations** compatibility so CGS guns, attachments, and ammo can appear in combat-focused structure chests, fully configurable via the TriggerMobs config. Version 1.4.1 refines CGS integration with a revolver-based guard fallback and richer ammo chest loot for all CGS weapons.
+A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0+) equips mobs and guards with Create:Gunsmithing weapons on spawn—no InControl needed. Version 1.4.0 adds **Loot Integrations** compatibility so CGS guns, attachments, and ammo can appear in combat-focused structure chests, fully configurable via the TriggerMobs config. Version 1.4.1 refines CGS integration with a revolver-based guard fallback and richer ammo chest loot for all CGS weapons. **Version 1.5.0** adds an **optional Recruits** addon: when [Recruits](https://www.curseforge.com/minecraft/mc-mods/recruits) is installed, `recruits:crossbowman` units can use NTGL/CGS guns (offhand) alongside vanilla crossbow behavior, with ranged/strategic-fire command support. **There is no infinite ammo**—you must **supply recruits with CGS/NTGL ammo** (inventory, drops, or chests); the gun reloads from what they carry, then falls back to Recruits’ bow/crossbow AI when empty.
 
 ## Features
 
@@ -14,6 +14,7 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
 - ✅ **Built-in CGS Gun Spawning** (v1.3.0) - Mobs and guards spawn with Create:Gunsmithing weapons. Configurable per-mob weapon pools, dual wield chance, attachments, and drop chance. No InControl or datapack needed for mob CGS spawning.
 - ✅ **Loot Integrations chest loot** (v1.4.0) - Optional integration with [Loot Integrations](https://www.curseforge.com/minecraft/mc-mods/loot-integrations) and its addons: CGS guns, attachments, and ammo are injected into combat/adventure structure chests (vanilla dungeons, pillager outposts, strongholds, Integrated Villages, Underground Villages, etc.) via datapack-style JSONs shipped with TriggerMobs. Controlled by `includeLootGuns`, `includeLootAttachments`, and `includeLootAmmo` in `triggermobs-common.toml`.
 - ✅ **Optional Guard Villagers Support** - When [Guard Villagers](https://www.curseforge.com/minecraft/mc-mods/guard-villagers) is installed, guards can use NTGL and Create:Gunsmithing guns. Guards have separate accuracy (guardAccuracyNerf) and their own CGS spawn config (guardCgsSpawningEnabled, guardWeaponChance).
+- ✅ **Optional Recruits support** (v1.5.0) - When [Recruits](https://www.curseforge.com/minecraft/mc-mods/recruits) is installed, crossbowmen (`recruits:crossbowman`) can spawn with and use CGS/NTGL guns (offhand; crossbow remains in main hand for Recruits AI). **No infinite ammo:** recruits must be **supplied with matching ammo** (give it, loot, or ground pickup into their inventory). Gun AI respects ranged/strategic-fire commands; magazines deplete and reload only from carried ammo. No Recruits source change required—TriggerMobs acts as an addon.
 
 ## Requirements
 
@@ -38,12 +39,15 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
 2. **Optional - Guard Villagers (for building with guard support):**
    - Place a Guard Villagers JAR (e.g. `guardvillagers-1.20.1-*.jar`) in `common/libs/` to enable optional compile-time support. The mod still works at runtime with Guard Villagers without this step.
 
-3. **Build TriggerMobs:**
+3. **Optional - Recruits (for building with recruits crossbowman integration):**
+   - Place a Recruits JAR for MC 1.20.1 (e.g. `recruits-1.20.1-*.jar`) in `common/libs/` if you want compile-time alignment with Recruits types. Runtime behavior is gated with `ModList.isLoaded("recruits")`; the mod runs without Recruits installed.
+
+4. **Build TriggerMobs:**
    ```bash
    ./gradlew build
    ```
 
-4. **Run for testing:**
+5. **Run for testing:**
    ```bash
    ./gradlew :forge:runClient
    ```
@@ -100,6 +104,7 @@ The project build files have been updated to remove Manifold. If you're building
 - **TConstruct-Emergence / Tinkers addons:** When [TConstruct-Emergence](https://www.curseforge.com/minecraft/mc-mods/tconstruct-emergence) (or similar) equips mobs with Tinkers' Construct tools (e.g. skeletons with longbows), TriggerMobs recognizes those as weapons and does not drop them. Only items in the `tconstruct:modifiable` tag (actual tools/weapons) are treated as weapons—not materials, casts, or other TConstruct items. Addon weapons from **Tinkers-Rapier** and **TinkersKatanas** (and other addons that register to TConstruct tags or use namespaces `tinker_rapier` / `tinkerskatanas`) are also recognized so mobs keep them.
 - **TC-E bow-mob split (vanilla weapons removed):** When vanilla weapons (e.g. bows) are removed from mob loot by another mod or datapack, set **`vanillaWeaponsRemoved`** to true in config. Skeleton/stray/wither_skeleton then always get a weapon: **weaponChance** (e.g. 0.2) get CGS guns, the rest get a TConstruct-Emergence longbow. This keeps bow mobs armed without raising TC-E’s global weaponChance (which would over-arm zombies). If `vanillaWeaponsRemoved` is false, the split is disabled and normal chances apply.
 - **Recruiting with guns:** TriggerMobs adds NTGL/Create:Gunsmithing weapons to Guard Villagers’ “convertible” item tag. You can **right-click a villager while crouching** with an NTGL gun (e.g. flintlock, revolver, shotgun) to convert them into a guard **holding that gun**. Works with all Create:Gunsmithing weapons. Other NTGL gun packs can be supported by adding their items to the tag `guardvillagers:convertible_guard_items` via a datapack.
+- **Recruits (v1.5.0):** Optional. If Recruits is installed, TriggerMobs injects gun AI for `recruits:crossbowman` only, adds them to `valid_gun_mobs` for CGS spawn assignment, and can pull loose CGS ammo into recruit inventory. **Recruits do not get infinite ammo**—stock them with the correct CGS/NTGL ammo or they will run dry and rely on the crossbow. Recruits remains optional—no hard dependency in `mods.toml`.
 - **Guard spawn equipment:** When Guard Villagers is installed, TriggerMobs **overrides** the guard equipment loot table. By default (Guard Villagers’ loot table `guardvillagers:entities/guard_armor`), guards spawn with:
   - **Main hand:** CGS guns (from TriggerMobs config) or TConstruct/other from datapack
   - **Off hand:** 10% bread (1–8), or 50% shield
@@ -110,8 +115,14 @@ The project build files have been updated to remove Manifold. If you're building
 
 - **NTGL is required** - This mod will not work without NukaTeamGunLib installed
 - **Gun pack is required** - Add a gun pack that uses NTGL
+- **Recruits crossbowmen (v1.5.0):** Their NTGL/CGS guns use **finite ammo only**. Give ammo items, use recruit inventory/chests, or let them pick up CGS ammo from the ground—there is **no** free infinite magazine for recruits.
 
 ## Changelog
+
+### Version 1.5.0
+
+- **Optional Recruits integration:** When the [Recruits](https://www.curseforge.com/minecraft/mc-mods/recruits) mod is loaded, `recruits:crossbowman` gets a TriggerMobs gun goal (NTGL/CGS) that respects Recruits ranged and strategic-fire commands. CGS gun is equipped in the **off hand** so the vanilla **crossbow stays in the main hand** for Recruits’ own AI. `valid_gun_mobs` includes `recruits:crossbowman` for CGS spawn assignment.
+- **Finite ammo for crossbowmen:** `IgnoreAmmo` is not applied to their spawned CGS weapons; shots consume magazine ammo per NTGL—**players must supply ammo** (no infinite ammo). Reload pulls from the recruit’s **inventory** (not NTGL’s mob free-reload paths). CGS ammo on the ground near crossbowmen can be moved into inventory; other mobs no longer delete loose CGS ammo items when cleaning drops.
 
 ### Version 1.4.1
 

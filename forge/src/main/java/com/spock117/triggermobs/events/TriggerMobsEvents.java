@@ -1,11 +1,13 @@
 package com.spock117.triggermobs.events;
 
 import com.nukateam.ntgl.common.data.WeaponData;
+import com.nukateam.ntgl.common.data.attachment.IAttachment;
 import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
 import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.spock117.triggermobs.TriggerMobs;
 import com.spock117.triggermobs.config.TriggerMobsConfig;
 import com.spock117.triggermobs.goals.MobGunAttackGoal;
+import com.spock117.triggermobs.goals.RecruitsMusketTypeGunGoal;
 import com.spock117.triggermobs.integration.TCEmergenceIntegration;
 import com.spock117.triggermobs.spawn.GunPicker;
 import com.spock117.triggermobs.util.ModDetectionHelper;
@@ -159,6 +161,22 @@ public class TriggerMobsEvents {
                 }
             }
         }
+
+        // recruits crossbowman: add musket-type NTGL goal addon when recruits is installed
+        if (net.minecraftforge.fml.ModList.get().isLoaded(RECRUITS_MOD_ID) && event.getEntity() instanceof PathfinderMob pathfinderMob) {
+            ResourceLocation typeId = ForgeRegistries.ENTITY_TYPES.getKey(pathfinderMob.getType());
+            if (typeId != null && RECRUITS_CROSSBOWMAN_ID.equals(typeId.toString())) {
+                if (!pathfinderMob.getPersistentData().getBoolean(TAG_RECRUITS_MUSKET_GOAL_ADDED)) {
+                    pathfinderMob.getPersistentData().putBoolean(TAG_RECRUITS_MUSKET_GOAL_ADDED, true);
+                    try {
+                        // Priority -1 so this goal outranks recruits' own LOOK-only ranged goals.
+                        pathfinderMob.goalSelector.addGoal(-1, new RecruitsMusketTypeGunGoal(pathfinderMob, 16.0F));
+                    } catch (Exception ignored) {
+                        // Silently handle errors - don't crash entity spawning.
+                    }
+                }
+            }
+        }
         
         // Only add goal to hostile mobs (Monster)
         if (event.getEntity() instanceof Monster monster) {
@@ -184,6 +202,9 @@ public class TriggerMobsEvents {
 
     private static final String CGS_NAMESPACE = "cgs";
     private static final String TAG_APPLIED = "triggermobs_cgs_applied";
+    private static final String RECRUITS_MOD_ID = "recruits";
+    private static final String RECRUITS_CROSSBOWMAN_ID = "recruits:crossbowman";
+    private static final String TAG_RECRUITS_MUSKET_GOAL_ADDED = "triggermobs_recruits_musket_goal_added";
 
     /**
      * Force CGS weapon drops using dropChanceOverride so drops are reliable regardless of
@@ -289,6 +310,13 @@ public class TriggerMobsEvents {
             mobs.addAll(spawnMobs);
         }
         for (Mob mob : mobs) {
+            // Special-case: recruits crossbowmen need CGS ammo items preserved on the ground
+            // and inserted into their own inventory.
+            if (net.minecraftforge.fml.ModList.get().isLoaded(RECRUITS_MOD_ID) && isRecruitsCrossbowman(mob)) {
+                tryPickupCgsAmmoForRecruitsCrossbowman(mob, level);
+                continue;
+            }
+
             // Only handle mobs that should have custom pickup behavior
             if (!MobItemPickupHelper.shouldHandlePickup(mob)) {
                 continue;
@@ -400,7 +428,7 @@ public class TriggerMobsEvents {
                 }
 
                 // If mob is close enough to pick up the item and it's not a weapon/tool, remove it
-                if (!MobItemPickupHelper.isWeaponOrTool(itemStack)) {
+                if (!MobItemPickupHelper.isWeaponOrTool(itemStack) && !isCgsAmmoItem(itemStack)) {
                     itemEntity.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
                 }
                 
@@ -444,6 +472,60 @@ public class TriggerMobsEvents {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private static boolean isRecruitsCrossbowman(Mob mob) {
+        ResourceLocation typeId = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
+        return typeId != null && RECRUITS_CROSSBOWMAN_ID.equals(typeId.toString());
+    }
+
+    private static boolean isCgsAmmoItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (id == null || !CGS_NAMESPACE.equals(id.getNamespace())) return false;
+        // Guns + attachments are handled normally as weapons/tools.
+        if (stack.getItem() instanceof IWeapon) return false;
+        return !(stack.getItem() instanceof IAttachment<?>);
+    }
+
+    /**
+     * Inserts nearby CGS ammo items into the recruits crossbowman's inventory.
+     * <p>
+     * Uses reflection so this code doesn't hard-depend on `recruits` classes at runtime.
+     */
+    private static void tryPickupCgsAmmoForRecruitsCrossbowman(Mob mob, Level level) {
+        if (!ModDetectionHelper.isCreateGunsmithingLoaded()) return;
+
+        Object inventory;
+        Method addItemMethod;
+        try {
+            inventory = mob.getClass().getMethod("getInventory").invoke(mob);
+            addItemMethod = inventory.getClass().getMethod("addItem", ItemStack.class);
+        } catch (Throwable t) {
+            return;
+        }
+
+        AABB searchBox = mob.getBoundingBox().inflate(2.0D);
+        List<ItemEntity> nearbyItems = level.getEntitiesOfClass(ItemEntity.class, searchBox);
+        for (ItemEntity itemEntity : nearbyItems) {
+            if (itemEntity.isRemoved() || !itemEntity.isAlive()) continue;
+
+            ItemStack itemStack = itemEntity.getItem();
+            if (!isCgsAmmoItem(itemStack)) continue;
+            if (mob.distanceToSqr(itemEntity) >= 4.0D) continue; // 2.0 blocks
+
+            try {
+                ItemStack remaining = (ItemStack) addItemMethod.invoke(inventory, itemStack.copy());
+                if (remaining == null || remaining.isEmpty()) {
+                    itemEntity.remove(net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+                } else {
+                    itemEntity.setItem(remaining);
+                }
+            } catch (Throwable t) {
+                // Avoid spamming reflection errors; just stop handling this mob for now.
+                return;
             }
         }
     }

@@ -12,6 +12,7 @@
     "minecraft:vindicator",
     "minecraft:evoker",
     "minecraft:witch",
-    "minecraft:zombified_piglin"
+      "minecraft:zombified_piglin",
+      "recruits:crossbowman"
   ]
 }

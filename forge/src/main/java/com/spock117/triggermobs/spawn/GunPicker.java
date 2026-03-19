@@ -17,6 +17,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.item.Item;
 import net.minecraft.util.RandomSource;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -34,6 +35,7 @@ public class GunPicker {
 
     private static final String CGS_NAMESPACE = "cgs";
     private static final String TCONSTRUCT_NAMESPACE = "tconstruct";
+    private static final String RECRUITS_CROSSBOWMAN_ID = "recruits:crossbowman";
 
     // Basic one-handed weapons
     private static final String[] BASIC_WEAPONS = {"flintlock", "revolver", "shotgun"};
@@ -57,6 +59,11 @@ public class GunPicker {
     private static boolean isGuard(PathfinderMob mob) {
         ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
         return key != null && GUARD_ENTITY_ID.equals(key.toString());
+    }
+
+    private static boolean isRecruitsCrossbowman(PathfinderMob mob) {
+        ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
+        return key != null && RECRUITS_CROSSBOWMAN_ID.equals(key.toString());
     }
 
     /**
@@ -161,6 +168,10 @@ public class GunPicker {
         if (!mainHand.isEmpty() && mainHand.getItem() instanceof IWeapon) {
             ResourceLocation id = ForgeRegistries.ITEMS.getKey(mainHand.getItem());
             if (id != null && CGS_NAMESPACE.equals(id.getNamespace())) {
+                // CGS default / prior tagging may still set IgnoreAmmo; strip for musket-type recruits.
+                if (isRecruitsCrossbowman(mob)) {
+                    stripIgnoreAmmo(mainHand);
+                }
                 markApplied(mob);
                 return true;
             }
@@ -173,11 +184,29 @@ public class GunPicker {
 
         ItemStack weaponStack = new ItemStack(weaponItem);
         applyRandomAttachments(weaponStack, mob);
-        setInfiniteAmmo(weaponStack);
+        if (!isRecruitsCrossbowman(mob)) {
+            setInfiniteAmmo(weaponStack);
+        } else {
+            // Item defaults or attachments must not leave IgnoreAmmo or shots never consume ammo
+            // (see ServerPlayHandler.handleShoot).
+            stripIgnoreAmmo(weaponStack);
+        }
         WeaponStateHelper.fillAmmo(new WeaponData(weaponStack, mob));
 
         double dropChance = TriggerMobsConfig.COMMON.dropChanceOverride.get();
         boolean isOneHanded = WeaponModifierHelper.isOneHanded(new WeaponData(weaponStack, mob));
+
+        // recruits crossbowman: keep vanilla crossbow in main hand, place NTGL/CGS gun in offhand.
+        // Also, do not dual-wield for simplicity/compat.
+        if (isRecruitsCrossbowman(mob)) {
+            if (!mob.getOffhandItem().isEmpty()) {
+                return false;
+            }
+            mob.setItemInHand(InteractionHand.OFF_HAND, weaponStack);
+            mob.setDropChance(EquipmentSlot.OFFHAND, (float) dropChance);
+            markApplied(mob);
+            return true;
+        }
 
         // Dual wield: same weapon in both hands (InControl-style)
         if (isOneHanded && mob.getRandom().nextDouble() < TriggerMobsConfig.COMMON.dualWieldChance.get()) {
@@ -289,6 +318,17 @@ public class GunPicker {
 
     private static void setInfiniteAmmo(ItemStack weaponStack) {
         weaponStack.getOrCreateTag().putBoolean("IgnoreAmmo", true);
+    }
+
+    /** NTGL skips {@link WeaponStateHelper#consumeAmmo} when this tag is present. */
+    private static void stripIgnoreAmmo(ItemStack weaponStack) {
+        if (weaponStack.isEmpty()) {
+            return;
+        }
+        var tag = weaponStack.getTag();
+        if (tag != null && tag.contains("IgnoreAmmo", Tag.TAG_BYTE)) {
+            tag.remove("IgnoreAmmo");
+        }
     }
 
     private static <T> void shuffleList(List<T> list, RandomSource random) {
