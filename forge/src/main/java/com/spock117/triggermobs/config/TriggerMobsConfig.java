@@ -30,6 +30,9 @@ public class TriggerMobsConfig {
         public final ForgeConfigSpec.ConfigValue<List<? extends String>> mobWeaponOverrides;
         public final ForgeConfigSpec.BooleanValue guardCgsSpawningEnabled;
         public final ForgeConfigSpec.DoubleValue guardWeaponChance;
+        public final ForgeConfigSpec.BooleanValue recruitsTinkersReplaceWithCgs;
+        public final ForgeConfigSpec.DoubleValue recruitsTinkersReplaceChance;
+        public final ForgeConfigSpec.IntValue recruitsCgsSpawnAmmoAmount;
         public final ForgeConfigSpec.BooleanValue vanillaWeaponsRemoved;
 
         // AI nerf options
@@ -108,12 +111,32 @@ public class TriggerMobsConfig {
                 .defineList("mobWeaponOverrides", defaultMobWeaponOverrides(), s -> s instanceof String && ((String) s).contains("="));
 
             this.guardCgsSpawningEnabled = builder
-                .comment("Enable CGS weapon spawning for guard villagers. Replaces datapack CGS pools; TConstruct weapons in datapack remain.")
+                .comment("Enable CGS weapon spawning for Guard Villagers (guardvillagers:guard). Replaces datapack CGS pools; TConstruct weapons in datapack remain.")
                 .define("guardCgsSpawningEnabled", true);
 
             this.guardWeaponChance = builder
                 .comment("Probability that a guard spawns with a CGS gun. Range: 0.0 to 1.0. Default 0.35 (higher than regular mobs).")
                 .defineInRange("guardWeaponChance", 0.35, 0.0, 1.0);
+
+            this.recruitsTinkersReplaceWithCgs = builder
+                .comment(
+                        "Villager Recruits (recruits:*): when main hand holds a replaceable weapon (vanilla sword/axe/bow/crossbow/trident, "
+                                + "or tconstruct / tinkers_things item, not already a CGS gun), roll recruitsTinkersReplaceChance to replace "
+                                + "main hand with a CGS gun (pools from mobWeaponOverrides / defaults). If the roll fails, normal weaponChance "
+                                + "and valid_gun_mobs / overrides still apply. Independent of guard CGS settings.")
+                .define("recruitsTinkersReplaceWithCgs", true);
+
+            this.recruitsTinkersReplaceChance = builder
+                .comment(
+                        "Probability to apply that main-hand replacement when recruitsTinkersReplaceWithCgs is true. Range: 0.0 to 1.0.")
+                .defineInRange("recruitsTinkersReplaceChance", 0.35, 0.0, 1.0);
+
+            this.recruitsCgsSpawnAmmoAmount = builder
+                .comment(
+                        "When a Villager Recruit receives a CGS gun from TriggerMobs, this many ammo items are added to their "
+                                + "inventory (via addItem; typically backpack slots). Used for reloading after the magazine empties. "
+                                + "The magazine is still filled once by NTGL fillAmmo. 0 disables extra inventory ammo.")
+                .defineInRange("recruitsCgsSpawnAmmoAmount", 64, 0, 576);
 
             this.vanillaWeaponsRemoved = builder
                 .comment("Set to true if vanilla weapons (e.g. bows, swords) are removed from mob loot/spawn by another mod or datapack. When true and TConstruct-Emergence is loaded, skeleton/stray/wither_skeleton always get a weapon: weaponChance = CGS, rest = TC-E longbow. Keeps bow mobs armed without raising TC-E global weaponChance. Default false.")

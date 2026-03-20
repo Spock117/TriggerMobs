@@ -6,7 +6,7 @@
 2. **NukaTeamGunLib (NTGL)** - This mod is a required dependency
 3. **Minecraft 1.20.1 Forge 47.4.0** - The target Minecraft version
 4. *(Optional, for chest loot testing)* **Loot Integrations + addons** (lootintegrations, lootintegrations_vanilla, lootintegrations_integrated, lootintegrations_undergroundvillages, etc.) and **Create:Gunsmithing** to exercise the TriggerMobs Loot Integrations datapack integration.
-5. *(Optional, for Recruits crossbowman testing, v1.5.0+)* **[Recruits](https://www.curseforge.com/minecraft/mc-mods/recruits)** (MC 1.20.1) and **Create:Gunsmithing**—spawn or recruit `recruits:crossbowman` and verify offhand CGS gun, strategic/ranged commands, ammo depletion, inventory reload, and fallback to crossbow AI.
+5. *(Optional, for Recruits testing, v1.5.1+)* **[Recruits](https://www.curseforge.com/minecraft/mc-mods/recruits)** (MC 1.20.1) and **Create:Gunsmithing**—spawn or recruit `recruits:crossbowman` and verify offhand CGS gun, strategic/ranged commands, ammo depletion, inventory reload, and fallback to crossbow AI. For **v1.5.1**, also exercise `recruitsTinkersReplaceWithCgs` / `recruitsTinkersReplaceChance`, recruit main-hand vanilla+Tinkers→CGS, and `recruitsCgsSpawnAmmoAmount` (inventory ammo when a CGS gun is assigned).
 
 ## Setup for Development
 
@@ -98,7 +98,7 @@ The mod includes run configurations. You can run directly from Gradle:
    - ✅ **Dual-Wielding (v1.1.0)**: Mobs can dual-wield one-handed weapons when picking up compatible weapons
    - ✅ **Create:Gunsmithing AI (v1.1.0)**: If Create:Gunsmithing is installed, mobs should use weapon-specific AI behaviors
    - ✅ **Loot Integrations chest loot (v1.4.0)**: With Loot Integrations and its addons installed, and `includeLootGuns/includeLootAttachments/includeLootAmmo` enabled, use `/loot give` on vanilla and addon chest tables (e.g. dungeons, pillager outposts, Integrated Villages, Underground Villages) and verify CGS guns, attachments, and CGS ammo appear in combat/adventure structures only.
-   - ✅ **Recruits crossbowman (v1.5.0)**: With Recruits + Create:Gunsmithing + NTGL, spawn `recruits:crossbowman`; confirm CGS gun in off hand, crossbow in main, gun fires on commands, magazine depletes, reload uses inventory CGS ammo, ground ammo can be picked into inventory, and vanilla crossbow behavior when out of ammo.
+   - ✅ **Recruits crossbowman (v1.5.1)**: With Recruits + Create:Gunsmithing + NTGL, spawn `recruits:crossbowman`; confirm CGS gun in off hand, crossbow in main, gun fires on commands, magazine depletes, reload uses inventory CGS ammo (including stacks from `recruitsCgsSpawnAmmoAmount` on assign), ground ammo can be picked into inventory, and vanilla crossbow behavior when out of ammo. With recruit replace enabled, verify main-hand CGS for vanilla and Tinkers weapons and that failed replace rolls still allow normal CGS spawn odds.
 
 3. **Verify behavior:**
    - Mobs should stop and aim when in range
@@ -198,6 +198,12 @@ triggermobs/
 │   └── build/libs/        # Built mod jar appears here
 └── build.gradle           # Root build file
 ```
+
+## Version 1.5.1 Changes (testing focus)
+
+- **Recruits:** `recruitsTinkersReplaceWithCgs` / `recruitsTinkersReplaceChance` are independent of guard CGS config; test recruit main-hand replace for vanilla and Tinkers gear.
+- **Ammo:** On CGS assign, check recruit inventory gains ammo per `recruitsCgsSpawnAmmoAmount`.
+- **Fallthrough:** With replace enabled but roll failing, confirm `weaponChance` / overrides can still assign a CGS gun when the entity qualifies.
 
 ## Version 1.3.0 Changes
 
