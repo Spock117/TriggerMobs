@@ -3,13 +3,14 @@
   "pools": [
     {
       "rolls": {
+        "type": "minecraft:uniform",
         "min": 0,
         "max": 2
       },
       "entries": [
         { "type": "minecraft:item", "name": "cgs:scope", "weight": 6 },
         { "type": "minecraft:item", "name": "cgs:flintlock_long_barrel", "weight": 4 },
-        { "type": "minecraft:item", "name": "cgs:flintlock_mortar_barrel", "weight": 3 },
+        { "type": "minecraft:item", "name": "cgs:flintlock_chambers", "weight": 3 },
         { "type": "minecraft:item", "name": "cgs:blunderbuss_barrel", "weight": 4 },
         { "type": "minecraft:item", "name": "cgs:blunderbuss_barrel_long", "weight": 3 },
         { "type": "minecraft:item", "name": "cgs:stock", "weight": 5 },

@@ -3,6 +3,7 @@
   "pools": [
     {
       "rolls": {
+        "type": "minecraft:uniform",
         "min": 1,
         "max": 3
       },
@@ -14,7 +15,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 6, "max": 16 }
+              "count": { "type": "minecraft:uniform", "min": 6, "max": 16 }
             }
           ]
         },
@@ -25,7 +26,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 6, "max": 16 }
+              "count": { "type": "minecraft:uniform", "min": 6, "max": 16 }
             }
           ]
         },
@@ -36,7 +37,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 4, "max": 12 }
+              "count": { "type": "minecraft:uniform", "min": 4, "max": 12 }
             }
           ]
         },
@@ -47,7 +48,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 3, "max": 10 }
+              "count": { "type": "minecraft:uniform", "min": 3, "max": 10 }
             }
           ]
         },
@@ -58,7 +59,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 2, "max": 8 }
+              "count": { "type": "minecraft:uniform", "min": 2, "max": 8 }
             }
           ]
         },
@@ -69,7 +70,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 6, "max": 18 }
+              "count": { "type": "minecraft:uniform", "min": 6, "max": 18 }
             }
           ]
         },
@@ -80,7 +81,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 4, "max": 12 }
+              "count": { "type": "minecraft:uniform", "min": 4, "max": 12 }
             }
           ]
         },
@@ -91,7 +92,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 16, "max": 48 }
+              "count": { "type": "minecraft:uniform", "min": 16, "max": 48 }
             }
           ]
         },
@@ -102,7 +103,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 12, "max": 32 }
+              "count": { "type": "minecraft:uniform", "min": 12, "max": 32 }
             }
           ]
         },
@@ -113,7 +114,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 12, "max": 32 }
+              "count": { "type": "minecraft:uniform", "min": 12, "max": 32 }
             }
           ]
         },
@@ -124,7 +125,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 8, "max": 24 }
+              "count": { "type": "minecraft:uniform", "min": 8, "max": 24 }
             }
           ]
         },
@@ -135,7 +136,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 1, "max": 3 }
+              "count": { "type": "minecraft:uniform", "min": 1, "max": 3 }
             }
           ]
         },
@@ -146,7 +147,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 2, "max": 6 }
+              "count": { "type": "minecraft:uniform", "min": 2, "max": 6 }
             }
           ]
         },
@@ -157,29 +158,29 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 1, "max": 2 }
+              "count": { "type": "minecraft:uniform", "min": 1, "max": 2 }
             }
           ]
         },
         {
           "type": "minecraft:item",
-          "name": "cgs:burnable",
+          "name": "minecraft:coal_block",
           "weight": 3,
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 16, "max": 32 }
+              "count": { "type": "minecraft:uniform", "min": 1, "max": 4 }
             }
           ]
         },
         {
           "type": "minecraft:item",
-          "name": "cgs:blaze_cake",
+          "name": "create:blaze_cake",
           "weight": 2,
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 4, "max": 8 }
+              "count": { "type": "minecraft:uniform", "min": 2, "max": 6 }
             }
           ]
         },
@@ -190,7 +191,7 @@
           "functions": [
             {
               "function": "minecraft:set_count",
-              "count": { "min": 1, "max": 3 }
+              "count": { "type": "minecraft:uniform", "min": 1, "max": 3 }
             }
           ]
         }
