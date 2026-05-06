@@ -10,7 +10,7 @@ A **Minecraft 1.21.1 / NeoForge** mod that lets hostile mobs use **NTGL (NukaTea
 - **Mob gun targeting** — Custom gun AI aligns with vanilla-style ranged goals: it keys off the mob’s **attack target** without requiring `LivingEntity.canAttack` to pass in cases where that wrongly blocked shooting (“runs at you, never fires”).
 - **NTGL vs TriggerMobs goals** — For monsters (and Guard Villagers when present), NTGL’s own **`GunAttackGoal`** is stripped each tick so **one** gun pipeline runs (`MobGunAttackGoal` + strategies).
 - **Piglins** — Gun AI respects vanilla piglin aggression (`AbstractPiglin`): no aiming/firing outside the aggressive state.
-- **Smarter monster vs monster fire** — Same-type raiders, matching monster types, and piglin-on-piglin fights are gated so raids/herds don’t mag-dump friendly fire unless the target is the mob that actually hurt this one.
+- **No monster-on-monster gunfire** — Monsters never use gun AI against another monster; players, villagers, iron golems, and other non-`Monster` targets are unaffected.
 
 ## Features
 
@@ -68,11 +68,12 @@ See [BUILD_AND_TEST.md](BUILD_AND_TEST.md).
 
 ## Changelog
 
-### NeoForge / Minecraft 1.21.1 (current branch, mod version 1.5.2)
+### Version 1.5.3 (NeoForge / Minecraft 1.21.1)
 
+- **1.5.3:** Monsters never use gun AI against another monster (`MobGunAttackGoal`).
 - Port to **NeoForge** with **`neoforge.mods.toml`** and **`[[mixins]]`** config.
 - **`NtglServerPlayHandlerAggroMixin`** — Skip NTGL’s hostile sound-radius aggro sweep for **non-player** shooters.
-- **`MobGunAttackGoal`** — Target validity + monster-vs-monster friendly-fire gate; piglin aggression guard; NTGL **`GunAttackGoal`** stripped for monsters/guards holding NTGL weapons.
+- **`MobGunAttackGoal`** — Target validity (no monster-vs-monster shooting); piglin aggression guard; NTGL **`GunAttackGoal`** stripped for monsters/guards holding NTGL weapons.
 - Config bootstrap no longer reads Forge config getters before the common spec loads (avoids spurious “config not loaded” errors).
 
 ### Version 1.5.2 (Forge 1.20.1 — Loot Integrations)

@@ -9,13 +9,11 @@ import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
 import com.spock117.triggermobs.TriggerMobs;
 import com.spock117.triggermobs.ai.WeaponAIStrategy;
 import com.spock117.triggermobs.ai.WeaponStrategyFactory;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Monster;
@@ -133,26 +131,10 @@ public class MobGunAttackGoal extends Goal {
     }
 
     /**
-     * Stops raids / herds from mag-dumping friendly fire except when {@code target} is the mob that last damaged this one.
-     * <p>
-     * Previously we blocked every {@link Monster} vs {@link Monster} pair unless retaliating, which broke normal cases
-     * (e.g. piglin vs zombie). We only gate same {@link net.minecraft.world.entity.EntityType}, both
-     * {@link EntityTypeTags#RAIDERS}, or any two {@link AbstractPiglin} types.
+     * Monsters never use gun AI against another {@link Monster} (players, villagers, golems, etc. are unaffected).
      */
     private boolean suppressFriendlyMonsterGunfight(LivingEntity target) {
-        if (!(this.mob instanceof Monster) || !(target instanceof Monster) || !(target instanceof Mob targetMob)) {
-            return false;
-        }
-        if (this.mob.getLastHurtByMob() == target) {
-            return false;
-        }
-        if (this.mob.getType() == targetMob.getType()) {
-            return true;
-        }
-        if (this.mob instanceof AbstractPiglin && target instanceof AbstractPiglin) {
-            return true;
-        }
-        return this.mob.getType().is(EntityTypeTags.RAIDERS) && targetMob.getType().is(EntityTypeTags.RAIDERS);
+        return this.mob instanceof Monster && target instanceof Monster;
     }
 
 
