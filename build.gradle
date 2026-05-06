@@ -1,2 +1,3 @@
-// Root build.gradle - ForgeGradle is applied in subprojects (common and forge)
-// No plugins needed at root level
+plugins {
+    id 'net.neoforged.gradle.userdev' version '7.0.192' apply false
+}

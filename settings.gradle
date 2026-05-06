@@ -1,49 +1,13 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        maven { url = 'https://maven.minecraftforge.net/' }
-        maven { url = 'https://repo.spongepowered.org/maven' }
+        mavenCentral()
+        maven { url = 'https://maven.neoforged.net/releases' }
         maven { url = 'https://maven.parchmentmc.org' }
     }
-    resolutionStrategy {
-        eachPlugin {
-            if (it.requested.id.namespace == 'org.spongepowered') {
-                it.useModule('org.spongepowered:mixingradle:0.7-SNAPSHOT')
-            }
-        }
-    }
 }
-
-def loadVersionProperties() {
-    // Get all the files in "versionProperties", as we're getting the file names, we should remove the ".properties" at the end to get the versions
-    def mcVers = fileTree("versionProperties").files.collect { it.name.replaceAll("\\.properties", "") }
-        .sort { a, b -> // Sort it so it always goes from oldest to newest using semantic versioning
-            def aParts = a.tokenize('.'); def bParts = b.tokenize('.')
-            for (int i = 0; i < Math.min(aParts.size(), bParts.size()); i++) {
-                def aNum = aParts[i].isInteger() ? aParts[i].toInteger() : aParts[i]
-                def bNum = bParts[i].isInteger() ? bParts[i].toInteger() : bParts[i]
-                def compare = aNum <=> bNum
-                if (compare != 0) return compare
-            }
-            return aParts.size() <=> bParts.size()
-        }
-    def mcVersion = hasProperty("mc_ver") ? mc_ver : ""
-    def mcIndex = mcVers.indexOf(mcVersion)
-
-    assert mcIndex != -1 : "MC version $mcVersion not found in $mcVers. Is the 'mc_ver' property correctly set?"
-
-    def props = new Properties()
-    props.load(new FileInputStream("$rootDir/versionProperties/${mcVersion}.properties"))
-
-    props.each { key, value -> gradle.ext.set(key, value) }
-    gradle.ext.mcVers = mcVers
-    gradle.ext.mcIndex = mcIndex
-}
-loadVersionProperties()
 
 include('common')
-((String) gradle.builds_for).split(",").each { loader ->
-    include(loader.trim())
-}
+include('neoforge')
 
 rootProject.name = 'triggermobs'

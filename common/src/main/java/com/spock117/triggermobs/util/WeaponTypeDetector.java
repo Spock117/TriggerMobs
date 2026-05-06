@@ -36,14 +36,21 @@ public class WeaponTypeDetector {
             return null;
         }
         
-        // Try to use ForgeRegistries via reflection (available at runtime on Forge)
+        // Try NeoForge/Forge registries via reflection to keep common code loader-agnostic.
         try {
-            Class<?> forgeRegistries = Class.forName("net.minecraftforge.registries.ForgeRegistries");
-            Object itemsRegistry = forgeRegistries.getField("ITEMS").get(null);
+            Class<?> neoforgeRegistries = Class.forName("net.neoforged.neoforge.registries.NeoForgeRegistries");
+            Object itemsRegistry = neoforgeRegistries.getField("ITEMS").get(null);
             java.lang.reflect.Method getKey = itemsRegistry.getClass().getMethod("getKey", Object.class);
             return (ResourceLocation) getKey.invoke(itemsRegistry, item);
         } catch (Exception e) {
-            // ForgeRegistries not available, try alternative approach
+            try {
+                Class<?> forgeRegistries = Class.forName("net.minecraftforge.registries.ForgeRegistries");
+                Object itemsRegistry = forgeRegistries.getField("ITEMS").get(null);
+                java.lang.reflect.Method getKey = itemsRegistry.getClass().getMethod("getKey", Object.class);
+                return (ResourceLocation) getKey.invoke(itemsRegistry, item);
+            } catch (Exception ignored) {
+                // Registries unavailable, try alternative approach.
+            }
             // Check item description ID which contains namespace
             String descriptionId = item.getDescriptionId();
             if (descriptionId != null && descriptionId.contains(".")) {

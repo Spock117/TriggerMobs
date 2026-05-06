@@ -7,7 +7,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.util.Set;
 
@@ -144,8 +143,8 @@ public class MobItemPickupHelper {
         }
         
         // If new armor has more enchantments, prefer it
-        int currentEnchants = EnchantmentHelper.getEnchantments(current).size();
-        int newEnchants = EnchantmentHelper.getEnchantments(newArmor).size();
+        int currentEnchants = current.getEnchantments().size();
+        int newEnchants = newArmor.getEnchantments().size();
         if (newEnchants > currentEnchants) {
             return true;
         }

@@ -48,6 +48,8 @@ versionProperties/
 
 ### Minecraft ###
 run/
+runs/
+**/runs/
 **/logs/
 **/crash-reports/
 **/run/

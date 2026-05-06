@@ -3,6 +3,7 @@ package com.spock117.triggermobs.ai;
 import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
 import com.spock117.triggermobs.ai.strategies.*;
 import com.spock117.triggermobs.util.WeaponTypeDetector;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -16,13 +17,13 @@ public class WeaponStrategyFactory {
      * @param weapon The weapon item stack
      * @return The weapon strategy, or GenericWeaponStrategy if weapon is not recognized
      */
-    public static WeaponAIStrategy createStrategy(ItemStack weapon) {
+    public static WeaponAIStrategy createStrategy(ItemStack weapon, PathfinderMob shooter) {
         if (weapon == null || weapon.isEmpty()) {
             return new GenericWeaponStrategy();
         }
         
         WeaponAIStrategy base = createBaseStrategy(weapon);
-        if (hasAttachments(weapon)) {
+        if (hasAttachments(weapon, shooter)) {
             return new AttachmentAwareStrategy(base, weapon);
         }
         return base;
@@ -48,8 +49,11 @@ public class WeaponStrategyFactory {
         };
     }
 
-    private static boolean hasAttachments(ItemStack weapon) {
-        var items = WeaponStateHelper.getAttachmentItems(weapon);
+    private static boolean hasAttachments(ItemStack weapon, PathfinderMob shooter) {
+        if (shooter == null || shooter.level() == null) {
+            return false;
+        }
+        var items = WeaponStateHelper.getAttachmentItems(weapon, shooter.level().registryAccess());
         return items != null && !items.isEmpty() && items.stream().anyMatch(s -> !s.isEmpty());
     }
 }

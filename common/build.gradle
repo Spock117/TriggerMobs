@@ -1,25 +1,7 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        maven { url = 'https://maven.parchmentmc.org' }
-        maven { url = 'https://repo.spongepowered.org/maven' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.parchmentmc:librarian:1.+'
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-    }
-}
-
 plugins {
     id 'java-library'
-    id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '5.1.+'
+    id 'net.neoforged.gradle.userdev'
 }
-
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
-apply plugin: 'org.spongepowered.mixin'
 
 version = "${mod_version}"
 group = project.group
@@ -28,62 +10,38 @@ base {
     archivesName = "${mod_id}-common"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 repositories {
+    mavenLocal()
     mavenCentral()
-    // Sponge repository for Mixin
-    maven {
-        url = 'https://repo.spongepowered.org/repository/maven-public/'
-    }
-    maven {
-        url = 'https://maven.minecraftforge.net'
-    }
     flatDir {
         dirs 'libs'
+    }
+    maven {
+        name = "ModMaven"
+        url = "https://modmaven.dev"
     }
 }
 
 dependencies {
-    // Minecraft dependency (required by ForgeGradle) - must be declared before minecraft block
-    minecraft 'net.minecraftforge:forge:1.20.1-47.4.0'
-    
-    // Mixin dependency (required for mixins)
-    compileOnly("org.spongepowered:mixin:0.8.5")
-    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
-    
-    // NTGL dependency - expects jar in libs/ folder
-    // At runtime, NTGL must be in the mods folder
-    // Note: Using files() dependency - ForgeGradle will warn about deobfuscation, but this is fine
-    // if NTGL is already deobfuscated (which mod JARs typically are)
-    
+    implementation "net.neoforged:neoforge:${neo_version}"
+
     def libsDir = file('libs')
-    def ntglJars = fileTree(dir: libsDir, include: 'ntgl-*.jar').files.findAll { 
+    def ntglJars = fileTree(dir: libsDir, include: ['ntgl-*.jar', 'ntgl*.jar', '*nukateam*gun*lib*.jar']).files.findAll {
         !it.name.contains('-sources') && !it.name.contains('-javadoc') 
-    }
+    }.sort { a, b -> b.name <=> a.name }
     
     if (!ntglJars.isEmpty()) {
-        // Use file dependency - warning about deobfuscation is harmless if NTGL is already deobfuscated
-        def ntglJar = ntglJars.first()
-        compileOnly files(ntglJar)
-        println "Using NTGL from: ${ntglJar}"
+        compileOnly files(ntglJars.first())
     } else {
-        // Fallback - will be provided by forge module
-        // compileOnly("com.nukateam:ntgl:1.20.1-3.0.4")
+        compileOnly "com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.21.1-3.1.0'}"
     }
 }
 
-minecraft {
-    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
-    // Don't set up runs for common module - runs are configured in forge module
-}
-
-// Mixin configuration removed - using Forge events instead
-
-// Process resources to expand properties
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-        java_version: '17',
+        java_version: '21',
         mod_id: mod_id,
         mod_name: mod_name,
         mod_version: mod_version

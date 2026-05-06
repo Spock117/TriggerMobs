@@ -48,7 +48,7 @@
    ```
 
 3. The built mod jar will be in:
-   - `triggermobs/forge/build/libs/triggermobs-forge-<version>.jar`
+   - `triggermobs/neoforge/build/libs/triggermobs-neoforge-<version>.jar`
 
 ## Testing the Mod
 
@@ -58,7 +58,7 @@
 
 2. **Install required mods in the mods folder:**
    - `ntgl-<version>.jar` (NukaTeamGunLib - REQUIRED)
-   - `triggermobs-forge-<version>.jar` (TriggerMobs - your mod)
+   - `triggermobs-neoforge-<version>.jar` (TriggerMobs - your mod)
    - Any other dependencies NTGL requires
 
 3. **Start the game** and create a test world
@@ -69,10 +69,10 @@ The mod includes run configurations. You can run directly from Gradle:
 
 ```bash
 # Run client
-./gradlew :forge:runClient
+./gradlew :neoforge:runClient
 
 # Run server
-./gradlew :forge:runServer
+./gradlew :neoforge:runServer
 ```
 
 **Note:** Make sure NTGL is in the mods folder of the run directory, or it will crash on startup.
@@ -121,7 +121,7 @@ When distributing your mod:
 1. **Build the mod** as described above
 
 2. **Create a distribution package** that includes:
-   - `triggermobs-forge-<version>.jar`
+   - `triggermobs-neoforge-<version>.jar`
    - **Instructions** that NTGL is required
    - **Version compatibility** information
 
@@ -192,9 +192,9 @@ triggermobs/
 │   └── src/main/java/...  # Shared mod source code
 │       ├── goals/         # AI goals (MobGunAttackGoal)
 │       └── util/          # Utility classes (InaccuracyHelper, MobItemPickupHelper)
-├── forge/
-│   ├── src/main/java/...  # Forge-specific code
-│   │   └── events/        # Forge event handlers (TriggerMobsEvents) - v1.1.0
+├── neoforge/
+│   ├── src/main/java/...  # NeoForge-specific code
+│   │   └── events/        # Game event handlers (TriggerMobsEvents) - v1.1.0
 │   └── build/libs/        # Built mod jar appears here
 └── build.gradle           # Root build file
 ```

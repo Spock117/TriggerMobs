@@ -1,0 +1,144 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev'
+}
+
+version = "${minecraft_version}-${mod_version}"
+group = project.group
+base {
+    archivesName = "${mod_id}-neoforge"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+runs {
+    configureEach {
+        // FML legacy JVM property names (still used by NeoForge dev runs; see NeoForge MDK)
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        modSource sourceSets.main
+    }
+    client {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
+    server {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        argument '--nogui'
+    }
+    gameTestServer {
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
+    data {
+        arguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenLocal()
+    maven {
+        url "https://www.cursemaven.com"
+    }
+    maven {
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
+    flatDir {
+        dirs '../common/libs'
+    }
+    maven {
+        name = "Sponge"
+        url = 'https://repo.spongepowered.org/repository/maven-public/'
+    }
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neo_version}"
+
+    annotationProcessor('org.spongepowered:mixin:0.8.7:processor')
+    compileOnly('org.spongepowered:mixin:0.8.7')
+
+    implementation project(':common')
+    
+    def libsDir = file('../common/libs')
+    def ntglJars = fileTree(dir: libsDir, include: ['ntgl-*.jar', 'ntgl*.jar', '*nukateam*gun*lib*.jar']).files.findAll {
+        !it.name.contains('-sources') && !it.name.contains('-javadoc') 
+    }.sort { a, b -> b.name <=> a.name }
+    
+    if (!ntglJars.isEmpty()) {
+        implementation files(ntglJars.first())
+        println "Using NTGL from local jar: ${ntglJars.first().name}"
+    } else {
+        implementation "com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.21.1-3.1.0'}"
+    }
+
+    def cgsJars = fileTree(dir: libsDir, include: ['cgs-*.jar', 'cgs*.jar']).files.findAll {
+        !it.name.contains('-sources') && !it.name.contains('-javadoc')
+    }.sort { a, b -> b.name <=> a.name }
+    if (!cgsJars.isEmpty()) {
+        compileOnly files(cgsJars.first())
+        println "Using CGS from local jar: ${cgsJars.first().name}"
+    } else {
+        compileOnly "com.nukateam:cgs:${project.findProperty('minecraft_version') ?: '1.21.1'}-${project.findProperty('cgs_version') ?: '1.4.3'}"
+    }
+
+    def guardVillagerJars = fileTree(dir: libsDir, include: '*guardvillagers*.jar').files.findAll {
+        !it.name.contains('-sources') && !it.name.contains('-javadoc')
+    }.sort { a, b -> b.name <=> a.name }
+    if (!guardVillagerJars.isEmpty()) {
+        compileOnly files(guardVillagerJars.first())
+        println "Using Guard Villagers from local jar: ${guardVillagerJars.first().name}"
+    }
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+        version: mod_version,
+        minecraft_version: minecraft_version,
+        minecraft_version_range: minecraft_version_range,
+        neo_version: neo_version,
+        loader_version_range: loader_version_range,
+        mod_id: mod_id,
+        mod_name: mod_name,
+        mod_version: mod_version,
+        mod_authors: mod_authors,
+        mod_description: project.findProperty('description') ?: 'Trigger Mobs - enables mobs to use NTGL and Create:Gunsmithing guns.',
+        license: license,
+        credits: project.findProperty('credits') ?: '',
+        java_version: '21'
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+jar {
+    // Merge common sources into this NeoForge runtime JAR
+    from(project(':common').sourceSets.main.output) {
+        exclude 'META-INF/mods.toml' // Exclude common's mods.toml if it exists
+    }
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    manifest {
+        attributes([
+            "Specification-Title"     : mod_id,
+            "Specification-Vendor"    : mod_authors,
+            "Specification-Version"   : "1",
+            "Implementation-Title"    : project.name,
+            "Implementation-Version"  : project.jar.archiveVersion,
+            "Implementation-Vendor"   : mod_authors,
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

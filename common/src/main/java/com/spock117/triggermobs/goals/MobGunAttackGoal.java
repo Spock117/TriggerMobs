@@ -3,22 +3,23 @@ package com.spock117.triggermobs.goals;
 import com.nukateam.ntgl.common.data.WeaponData;
 import com.nukateam.ntgl.common.data.holders.WeaponMode;
 import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
-import com.nukateam.ntgl.common.network.ServerPlayHandler;
-import com.nukateam.ntgl.common.network.message.C2SMessageShoot;
 import com.nukateam.ntgl.common.util.trackers.EntityReloadTracker;
 import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
 import com.spock117.triggermobs.TriggerMobs;
 import com.spock117.triggermobs.ai.WeaponAIStrategy;
 import com.spock117.triggermobs.ai.WeaponStrategyFactory;
-import com.spock117.triggermobs.util.InaccuracyHelper;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.EnumSet;
@@ -58,9 +59,20 @@ public class MobGunAttackGoal extends Goal {
         this.currentStrategy = new com.spock117.triggermobs.ai.strategies.GenericWeaponStrategy();
     }
 
+    /**
+     * Piglins/brutes extend {@link Monster} but only fight while the vanilla aggressive flag is set
+     * (brain syncs this with {@code ATTACK_TARGET}). Outside that state they must not aim or shoot.
+     */
+    private boolean piglinReadyForGunAi() {
+        if (!(this.mob instanceof AbstractPiglin piglin)) {
+            return true;
+        }
+        return piglin.isAdult() && piglin.isAggressive();
+    }
+
     @Override
     public boolean canUse() {
-        if (!this.isValidTarget() || !this.isHoldingGun()) {
+        if (!this.piglinReadyForGunAi() || !this.isValidTarget() || !this.isHoldingGun()) {
             return false;
         }
         if (TriggerMobs.outOfAmmoFallbackTicks <= 0 && !hasAnyAmmoOrCanReload()) {
@@ -80,14 +92,14 @@ public class MobGunAttackGoal extends Goal {
     private boolean hasAnyAmmoOrCanReload() {
         ItemStack mainHand = mob.getMainHandItem();
         ItemStack offHand = mob.getOffhandItem();
-        if (mainHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(mainHand)) return true;
-        if (offHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(offHand)) return true;
+        if (mainHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(new WeaponData(mainHand, mob))) return true;
+        if (offHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(new WeaponData(offHand, mob))) return true;
         return false;
     }
 
     @Override
     public boolean canContinueToUse() {
-        if (!this.isValidTarget() || !this.isHoldingGun()) {
+        if (!this.piglinReadyForGunAi() || !this.isValidTarget() || !this.isHoldingGun()) {
             return false;
         }
         if (!hasAnyAmmoOrCanReload()) {
@@ -107,7 +119,40 @@ public class MobGunAttackGoal extends Goal {
     }
 
     private boolean isValidTarget() {
-        return this.mob.getTarget() != null && this.mob.getTarget().isAlive();
+        LivingEntity target = this.mob.getTarget();
+        if (target == null || !target.isAlive()) {
+            return false;
+        }
+        // Like vanilla bow/ranged goals and NTGL's GunAttackGoal, only require a target — not
+        // LivingEntity.canAttack. That helper can veto creative/visibility/Forge hooks while the mob
+        // still holds a revenge or manual target from HurtByTargetGoal, yielding "runs at you, never shoots".
+        if (suppressFriendlyMonsterGunfight(target)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Stops raids / herds from mag-dumping friendly fire except when {@code target} is the mob that last damaged this one.
+     * <p>
+     * Previously we blocked every {@link Monster} vs {@link Monster} pair unless retaliating, which broke normal cases
+     * (e.g. piglin vs zombie). We only gate same {@link net.minecraft.world.entity.EntityType}, both
+     * {@link EntityTypeTags#RAIDERS}, or any two {@link AbstractPiglin} types.
+     */
+    private boolean suppressFriendlyMonsterGunfight(LivingEntity target) {
+        if (!(this.mob instanceof Monster) || !(target instanceof Monster) || !(target instanceof Mob targetMob)) {
+            return false;
+        }
+        if (this.mob.getLastHurtByMob() == target) {
+            return false;
+        }
+        if (this.mob.getType() == targetMob.getType()) {
+            return true;
+        }
+        if (this.mob instanceof AbstractPiglin && target instanceof AbstractPiglin) {
+            return true;
+        }
+        return this.mob.getType().is(EntityTypeTags.RAIDERS) && targetMob.getType().is(EntityTypeTags.RAIDERS);
     }
 
 
@@ -122,7 +167,10 @@ public class MobGunAttackGoal extends Goal {
         if (mob == null || !mob.isAlive() || mob.level() == null) {
             return;
         }
-        
+        if (!piglinReadyForGunAi()) {
+            return;
+        }
+
         var target = this.mob.getTarget();
         if (target == null || !target.isAlive()) {
             return;
@@ -200,7 +248,7 @@ public class MobGunAttackGoal extends Goal {
             
             if (weaponChanged) {
                 // Always switch strategy when weapon changes (strategy will handle ammo checks)
-                currentStrategy = WeaponStrategyFactory.createStrategy(weaponToUse);
+                currentStrategy = WeaponStrategyFactory.createStrategy(weaponToUse, mob);
                 if (currentStrategy == null) {
                     // Fallback to generic if factory returns null
                     currentStrategy = new com.spock117.triggermobs.ai.strategies.GenericWeaponStrategy();
@@ -223,9 +271,9 @@ public class MobGunAttackGoal extends Goal {
         }
         
         boolean hasGunWithAmmo = false;
-        if (hasMainGun && WeaponStateHelper.hasAmmo(mainHandWeapon)) {
+        if (hasMainGun && WeaponStateHelper.hasAmmo(new WeaponData(mainHandWeapon, mob))) {
             hasGunWithAmmo = true;
-        } else if (hasOffGun && WeaponStateHelper.hasAmmo(offHandWeapon)) {
+        } else if (hasOffGun && WeaponStateHelper.hasAmmo(new WeaponData(offHandWeapon, mob))) {
             hasGunWithAmmo = true;
         }
         
@@ -252,7 +300,7 @@ public class MobGunAttackGoal extends Goal {
         boolean isReloading = wasReloading;
         
         // Check ammo for the weapon we're using
-        boolean hasAmmo = WeaponStateHelper.hasAmmo(weaponToUse);
+        boolean hasAmmo = WeaponStateHelper.hasAmmo(new WeaponData(weaponToUse, mob));
         int ammoCount = WeaponStateHelper.getAmmoCount(new WeaponData(weaponToUse, mob));
         
         // Check if reload just completed
@@ -312,13 +360,18 @@ public class MobGunAttackGoal extends Goal {
     @Override
     public void start() {
         super.start();
-        mob.setAggressive(true);
+        // AbstractPiglin aggression is driven by PiglinAi from ATTACK_TARGET; do not overwrite it here.
+        if (!(mob instanceof AbstractPiglin)) {
+            mob.setAggressive(true);
+        }
     }
     
     @Override
     public void stop() {
         super.stop();
-        mob.setAggressive(false);
+        if (!(mob instanceof AbstractPiglin)) {
+            mob.setAggressive(false);
+        }
         this.seeTime = 0;
         this.attackDelay = 0;
         this.strafeCooldown = 0;
