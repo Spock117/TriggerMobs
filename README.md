@@ -68,6 +68,10 @@ See [BUILD_AND_TEST.md](BUILD_AND_TEST.md).
 
 ## Changelog
 
+### Version 1.5.4 (NeoForge / Minecraft 1.21.1)
+
+- **1.5.4:** `neoforge.mods.toml` — optional integrations (**guardvillagers**, **cgs**) use NeoForge **`type = "optional"`**; **neoforge**, **minecraft**, and **ntgl** use **`type = "required"`**.
+
 ### Version 1.5.3 (NeoForge / Minecraft 1.21.1)
 
 - **1.5.3:** Monsters never use gun AI against another monster (`MobGunAttackGoal`).
