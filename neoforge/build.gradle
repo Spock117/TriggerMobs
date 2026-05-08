@@ -72,17 +72,17 @@ dependencies {
         implementation files(ntglJars.first())
         println "Using NTGL from local jar: ${ntglJars.first().name}"
     } else {
-        implementation "com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.21.1-3.1.0'}"
+        implementation "com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.21.1-3.1.3'}"
     }
 
-    def cgsJars = fileTree(dir: libsDir, include: ['cgs-*.jar', 'cgs*.jar']).files.findAll {
+    def cgsJars = fileTree(dir: libsDir, include: ['cgs-*.jar', 'cgs*.jar', 'create-gunsmithing*.jar']).files.findAll {
         !it.name.contains('-sources') && !it.name.contains('-javadoc')
     }.sort { a, b -> b.name <=> a.name }
     if (!cgsJars.isEmpty()) {
         compileOnly files(cgsJars.first())
         println "Using CGS from local jar: ${cgsJars.first().name}"
     } else {
-        compileOnly "com.nukateam:cgs:${project.findProperty('minecraft_version') ?: '1.21.1'}-${project.findProperty('cgs_version') ?: '1.4.3'}"
+        compileOnly "com.nukateam:cgs:${project.findProperty('minecraft_version') ?: '1.21.1'}-${project.findProperty('cgs_version') ?: '1.4.5'}"
     }
 
     def guardVillagerJars = fileTree(dir: libsDir, include: '*guardvillagers*.jar').files.findAll {

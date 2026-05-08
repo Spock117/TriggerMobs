@@ -35,7 +35,7 @@ dependencies {
     if (!ntglJars.isEmpty()) {
         compileOnly files(ntglJars.first())
     } else {
-        compileOnly "com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.21.1-3.1.0'}"
+        compileOnly "com.nukateam:ntgl:${project.findProperty('ntgl_version') ?: '1.21.1-3.1.3'}"
     }
 }
 

@@ -37,9 +37,10 @@ A **Minecraft 1.21.1 / NeoForge** mod that lets hostile mobs use **NTGL (NukaTea
 ### Development
 
 1. Put **`ntgl-*.jar`** for **1.21.1** in `common/libs/` (no `-sources` / `-javadoc`).
-2. Optional: Guard Villagers jar in `common/libs/` for compile-time linkage.
-3. Build: `./gradlew build`
-4. Run client: `./gradlew :neoforge:runClient`
+2. Optional: **Create:Gunsmithing** jar for **1.21.1** — **`create-gunsmithing-*.jar`** or **`cgs-*.jar`** in `common/libs/` for NeoForge compile-time linkage.
+3. Optional: Guard Villagers jar in `common/libs/` for compile-time linkage.
+4. Build: `./gradlew build`
+5. Run client: `./gradlew :neoforge:runClient`
 
 ### Users
 
@@ -67,6 +68,12 @@ See [BUILD_AND_TEST.md](BUILD_AND_TEST.md).
 - **Recruits integration** exists only on legacy **Forge 1.20.1** artifacts, not in this NeoForge tree
 
 ## Changelog
+
+### Version 1.5.5 (NeoForge / Minecraft 1.21.1)
+
+- **Build:** NeoForge Gradle picks up local Create:Gunsmithing jars named **`create-gunsmithing-*.jar`** as well as **`cgs-*.jar`** / **`cgs*.jar`** from `common/libs/` (artifact rename no longer skips the local jar).
+- **Compatibility:** Shipped **`minecraft:is_projectile`** datapack extension adds **`ntgl:energy`** alongside **`ntgl:bullet`**, **`ntgl:fire`**, and **`ntgl:explosive`** (matches NTGL damage types).
+- **Dependencies:** Default Maven fallback versions in **`gradle.properties`** updated to **NTGL 1.21.1-3.1.3** and **CGS 1.4.5** when no matching jars are present in `common/libs/`.
 
 ### Version 1.5.4 (NeoForge / Minecraft 1.21.1)
 
