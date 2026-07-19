@@ -1,6 +1,6 @@
 # TriggerMobs Mod
 
-A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0+) equips mobs and guards with Create:Gunsmithing weapons on spawn—no InControl needed. Version 1.4.0 adds **Loot Integrations** compatibility so CGS guns, attachments, and ammo can appear in combat-focused structure chests, fully configurable via the TriggerMobs config. Version 1.4.1 refines CGS integration with a revolver-based guard fallback and richer ammo chest loot for all CGS weapons. **Version 1.5.0** adds an **optional Recruits** addon: when [Recruits](https://www.curseforge.com/minecraft/mc-mods/recruits) is installed, `recruits:crossbowman` units can use NTGL/CGS guns (offhand) alongside vanilla crossbow behavior, with ranged/strategic-fire command support. **Version 1.5.1** refines that path: recruit-only Tinkers/vanilla→CGS replacement (`recruitsTinkersReplaceWithCgs`, `recruitsTinkersReplaceChance`, separate from guard settings), main-hand replace for vanilla weapons as well as Tinkers, failed replace rolls still allow normal `weaponChance` / tag assignment, and **`recruitsCgsSpawnAmmoAmount`** adds reserve ammo when a recruit receives a CGS gun. **Version 1.5.2** fixes **Loot Integrations** loot table parsing for Forge 1.20.1 and current **Create:Gunsmithing**: internal tables use explicit **`minecraft:uniform`** on pool **`rolls`** and on **`set_count`** counts where needed; **`cgs:flintlock_mortar_barrel`** is removed from attachments (not a registered item upstream—replaced with **`cgs:flintlock_chambers`**); **`cgs:burnable` / `cgs:blaze_cake`** (NTGL ammo *types*, not item IDs) are replaced in chest loot with **`minecraft:coal_block`** and **`create:blaze_cake`**. **There is no infinite ammo**—you must **supply recruits with CGS/NTGL ammo** (inventory, drops, or chests); the gun reloads from what they carry, then falls back to Recruits’ bow/crossbow AI when empty.
+A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunLib) guns with automatic reloading, improved AI, and moderate inaccuracy. Optional Create:Gunsmithing support adds weapon-specific AI, and **built-in CGS gun spawning** (v1.3.0+) equips mobs and guards with Create:Gunsmithing weapons on spawn—no InControl needed. Version 1.4.0 adds **Loot Integrations** compatibility so CGS guns, attachments, and ammo can appear in combat-focused structure chests, fully configurable via the TriggerMobs config. Version 1.4.1 refines CGS integration with a revolver-based guard fallback and richer ammo chest loot for all CGS weapons. **Version 1.5.0** adds an **optional Recruits** addon: when [Recruits](https://www.curseforge.com/minecraft/mc-mods/recruits) is installed, `recruits:crossbowman` units can use NTGL/CGS guns (offhand) alongside vanilla crossbow behavior, with ranged/strategic-fire command support. **Version 1.5.1** refines that path: recruit-only Tinkers/vanilla→CGS replacement (`recruitsTinkersReplaceWithCgs`, `recruitsTinkersReplaceChance`, separate from guard settings), main-hand replace for vanilla weapons as well as Tinkers, failed replace rolls still allow normal `weaponChance` / tag assignment, and **`recruitsCgsSpawnAmmoAmount`** adds reserve ammo when a recruit receives a CGS gun. **Version 1.5.2** fixes **Loot Integrations** loot table parsing for Forge 1.20.1 and current **Create:Gunsmithing**: internal tables use explicit **`minecraft:uniform`** on pool **`rolls`** and on **`set_count`** counts where needed; **`cgs:flintlock_mortar_barrel`** is removed from attachments (not a registered item upstream—replaced with **`cgs:flintlock_chambers`**); **`cgs:burnable` / `cgs:blaze_cake`** (NTGL ammo *types*, not item IDs) are replaced in chest loot with **`minecraft:coal_block`** and **`create:blaze_cake`**. **Version 1.5.3** restores compatibility with **NTGL 3.1.2** (ammo checks and shoot message package). **There is no infinite ammo**—you must **supply recruits with CGS/NTGL ammo** (inventory, drops, or chests); the gun reloads from what they carry, then falls back to Recruits’ bow/crossbow AI when empty.
 
 ## Features
 
@@ -20,7 +20,7 @@ A Minecraft Forge 1.20.1 mod that enables hostile mobs to use NTGL (NukaTeamGunL
 
 - **Minecraft:** 1.20.1
 - **Forge:** 47.4.0
-- **NukaTeamGunLib (NTGL):** Required dependency (must be installed separately) (Tested on ntgl-1.20.1-3.0.4)
+- **NukaTeamGunLib (NTGL):** Required dependency (must be installed separately) (Tested on ntgl-1.20.1-3.1.2)
 - **A Gun Pack that uses NTGL:** Required - NTGL requires a gun pack to provide weapons. This mod works with all NTGL gun packs, including:
   - **Create:Gunsmithing** - A popular NTGL gun pack
   - Any other mod that provides weapons using NTGL
@@ -118,6 +118,12 @@ The project build files have been updated to remove Manifold. If you're building
 - **Recruits crossbowmen (v1.5.0+):** Their NTGL/CGS guns use **finite ammo only**. TriggerMobs adds reserve ammo to inventory when assigning a CGS gun (`recruitsCgsSpawnAmmoAmount` in config; magazine is still topped via NTGL `fillAmmo`). You can also supply ammo via chests or ground pickup—there is **no** free infinite magazine.
 
 ## Changelog
+
+### Version 1.5.3
+
+- **NTGL 3.1.2 compatibility:** Fixed server crash (`NoSuchMethodError`) when a mob with a CGS/NTGL gun ticks and checks ammo. NTGL 3.1.x removed `WeaponStateHelper.hasAmmo(ItemStack)`; gun AI now calls `hasAmmo(WeaponData)` with the mob as wielder.
+- **Shoot API package:** Updated weapon strategies to use `com.nukateam.ntgl.common.network.message.weapon.C2SMessageShoot` (moved in NTGL 3.1.2).
+- **Build:** Prefer the newest `ntgl-1.20.1-*.jar` in `common/libs` when compiling (e.g. 3.1.2 over 3.0.4).
 
 ### Version 1.5.2
 

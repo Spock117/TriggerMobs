@@ -3,8 +3,6 @@ package com.spock117.triggermobs.goals;
 import com.nukateam.ntgl.common.data.WeaponData;
 import com.nukateam.ntgl.common.data.holders.WeaponMode;
 import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
-import com.nukateam.ntgl.common.network.ServerPlayHandler;
-import com.nukateam.ntgl.common.network.message.C2SMessageShoot;
 import com.nukateam.ntgl.common.util.trackers.EntityReloadTracker;
 import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
@@ -80,8 +78,8 @@ public class MobGunAttackGoal extends Goal {
     private boolean hasAnyAmmoOrCanReload() {
         ItemStack mainHand = mob.getMainHandItem();
         ItemStack offHand = mob.getOffhandItem();
-        if (mainHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(mainHand)) return true;
-        if (offHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(offHand)) return true;
+        if (mainHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(new WeaponData(mainHand, mob))) return true;
+        if (offHand.getItem() instanceof IWeapon && WeaponStateHelper.hasAmmo(new WeaponData(offHand, mob))) return true;
         return false;
     }
 
@@ -223,9 +221,9 @@ public class MobGunAttackGoal extends Goal {
         }
         
         boolean hasGunWithAmmo = false;
-        if (hasMainGun && WeaponStateHelper.hasAmmo(mainHandWeapon)) {
+        if (hasMainGun && WeaponStateHelper.hasAmmo(new WeaponData(mainHandWeapon, mob))) {
             hasGunWithAmmo = true;
-        } else if (hasOffGun && WeaponStateHelper.hasAmmo(offHandWeapon)) {
+        } else if (hasOffGun && WeaponStateHelper.hasAmmo(new WeaponData(offHandWeapon, mob))) {
             hasGunWithAmmo = true;
         }
         
@@ -252,7 +250,7 @@ public class MobGunAttackGoal extends Goal {
         boolean isReloading = wasReloading;
         
         // Check ammo for the weapon we're using
-        boolean hasAmmo = WeaponStateHelper.hasAmmo(weaponToUse);
+        boolean hasAmmo = WeaponStateHelper.hasAmmo(new WeaponData(weaponToUse, mob));
         int ammoCount = WeaponStateHelper.getAmmoCount(new WeaponData(weaponToUse, mob));
         
         // Check if reload just completed
