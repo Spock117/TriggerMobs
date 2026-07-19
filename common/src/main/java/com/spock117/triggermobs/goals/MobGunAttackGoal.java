@@ -9,6 +9,7 @@ import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
 import com.spock117.triggermobs.TriggerMobs;
 import com.spock117.triggermobs.ai.WeaponAIStrategy;
 import com.spock117.triggermobs.ai.WeaponStrategyFactory;
+import com.spock117.triggermobs.util.GunAiDebug;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
@@ -296,12 +297,14 @@ public class MobGunAttackGoal extends Goal {
                 EntityReloadTracker.addTracker(mob, arm);
                 isReloading = true;
             }
+            GunAiDebug.logBlocked(mob, weaponToUse, "no_ammo (count=%d, reloading=%s)", ammoCount, isReloading);
             // Don't allow firing while reloading - return early
             return;
         }
         
         // If reloading (any hand), don't allow firing - wait for reload to complete
         if (isReloading) {
+            GunAiDebug.logBlocked(mob, weaponToUse, "reloading");
             return;
         }
 
@@ -323,12 +326,23 @@ public class MobGunAttackGoal extends Goal {
             }
             
             attackDelay = Math.max(1, calculatedDelay); // Ensure at least 1 tick minimum
+            GunAiDebug.logNextShotDelay(mob, attackDelay);
             
             currentStrategy.updateStrafeCooldown(mob);
             
             // Alternate hands for dual wielding
             if (isDualWielding) {
                 useMainHand = !useMainHand;
+            }
+        } else if (GunAiDebug.gunAi()) {
+            if (!isInRange) {
+                GunAiDebug.logBlocked(mob, weaponToUse, "out_of_range dist=%.1f max=%.1f", distance, strategyMaxDistance);
+            } else if (this.seeTime < reactionThreshold) {
+                GunAiDebug.logBlocked(mob, weaponToUse, "waiting_los seeTime=%d need=%d hasLos=%s",
+                        this.seeTime, reactionThreshold, hasLineOfSight);
+            } else if (attackDelay > 0) {
+                GunAiDebug.logBlocked(mob, weaponToUse, "attack_delay=%d (~%.1fs left)",
+                        attackDelay, attackDelay / 20.0);
             }
         }
 

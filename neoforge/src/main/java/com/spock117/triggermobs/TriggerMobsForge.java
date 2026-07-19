@@ -92,10 +92,17 @@ public class TriggerMobsForge {
                 if (TriggerMobsConfig.COMMON.includeLootAmmo != null) {
                     TriggerMobs.includeLootAmmo = TriggerMobsConfig.COMMON.includeLootAmmo.get();
                 }
-                TriggerMobs.LOGGER.info("TriggerMobs config loaded: baseAttackIntervalTicks={}, attackIntervalVariance={}, aiAccuracyNerf={}, guardAccuracyNerf={}, aiReactionDelayTicks={}, fireRateDelayMultiplier={}, outOfAmmoFallbackTicks={}, includeLootGuns={}, includeLootAttachments={}, includeLootAmmo={}",
+                if (TriggerMobsConfig.COMMON.debugGunAi != null) {
+                    TriggerMobs.debugGunAi = TriggerMobsConfig.COMMON.debugGunAi.get();
+                }
+                if (TriggerMobsConfig.COMMON.debugGunSpawn != null) {
+                    TriggerMobs.debugGunSpawn = TriggerMobsConfig.COMMON.debugGunSpawn.get();
+                }
+                TriggerMobs.LOGGER.info("TriggerMobs config loaded: baseAttackIntervalTicks={}, attackIntervalVariance={}, aiAccuracyNerf={}, guardAccuracyNerf={}, aiReactionDelayTicks={}, fireRateDelayMultiplier={}, outOfAmmoFallbackTicks={}, includeLootGuns={}, includeLootAttachments={}, includeLootAmmo={}, debugGunAi={}, debugGunSpawn={}",
                     TriggerMobs.baseAttackIntervalTicks, TriggerMobs.attackIntervalVariance,
                     TriggerMobs.aiAccuracyNerf, TriggerMobs.guardAccuracyNerf, TriggerMobs.aiReactionDelayTicks, TriggerMobs.fireRateDelayMultiplier, TriggerMobs.outOfAmmoFallbackTicks,
-                    TriggerMobs.includeLootGuns, TriggerMobs.includeLootAttachments, TriggerMobs.includeLootAmmo);
+                    TriggerMobs.includeLootGuns, TriggerMobs.includeLootAttachments, TriggerMobs.includeLootAmmo,
+                    TriggerMobs.debugGunAi, TriggerMobs.debugGunSpawn);
             } else {
                 throw new NullPointerException("Config not initialized - COMMON or baseAttackIntervalTicks is null");
             }
@@ -108,6 +115,8 @@ public class TriggerMobsForge {
             TriggerMobs.aiReactionDelayTicks = 0;
             TriggerMobs.fireRateDelayMultiplier = 4.0;
             TriggerMobs.outOfAmmoFallbackTicks = 100;
+            TriggerMobs.debugGunAi = false;
+            TriggerMobs.debugGunSpawn = false;
             TriggerMobs.LOGGER.error("Failed to load TriggerMobs config, using defaults. Error: {}", e.getMessage());
             e.printStackTrace();
         }

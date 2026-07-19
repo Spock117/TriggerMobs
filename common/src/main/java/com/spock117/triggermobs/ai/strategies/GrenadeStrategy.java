@@ -2,7 +2,7 @@ package com.spock117.triggermobs.ai.strategies;
 
 import com.nukateam.ntgl.common.data.WeaponData;
 import com.nukateam.ntgl.common.foundation.item.interfaces.IThrowable;
-import com.nukateam.ntgl.common.network.ServerPlayHandler;
+import com.spock117.triggermobs.util.GunAiDebug;
 import com.nukateam.ntgl.common.network.message.weapon.C2SMessageShoot;
 import com.nukateam.ntgl.common.data.holders.WeaponMode;
 import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
@@ -104,11 +104,7 @@ public class GrenadeStrategy implements WeaponAIStrategy {
                     WeaponMode.PRIMARY
             );
             
-            try {
-                ServerPlayHandler.handleShoot(msg, mob);
-            } catch (Exception e) {
-                // Silently handle errors
-            }
+            GunAiDebug.handleShoot(msg, mob, weapon, "Grenade");
         }
         
         mob.swing(hand);

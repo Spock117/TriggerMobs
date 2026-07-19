@@ -29,7 +29,7 @@ public class GuardLootTableEvents {
         "ntgl_minigun", "ntgl_gatling"
     };
     private static final String[] CGS_POOL_NAMES = {
-        "cgs_flintlock", "cgs_revolver", "cgs_shotgun", "cgs_nailgun",
+        "cgs_flintlock", "cgs_revolver", "cgs_shotgun",
         "cgs_gatling", "cgs_launcher"
     };
 

@@ -69,6 +69,12 @@ See [BUILD_AND_TEST.md](BUILD_AND_TEST.md).
 
 ## Changelog
 
+### Version 1.5.6 (NeoForge / Minecraft 1.21.1)
+
+- **CGS spawn prep:** Spawned (and already-held) CGS guns set NTGL **`IGNORE_AMMO`**, fill the magazine, and seed Create/CGS fuel tanks so mobs keep firing under NTGL 3.1.x / CGS fuel checks.
+- **Loot / pools:** Removed **nailgun** and **blazegun** from automatic loot and guard datapack pools (Create fuel); they remain usable via **`mobWeaponOverrides`** with fuel seeding on assign.
+- **Debug:** Optional **`debug.debugGunAi`** / **`debug.debugGunSpawn`** in `triggermobs-common.toml` log `[TM-ai]` / `[TM-spawn]` lines (ammo, ignoreAmmo, fuel, LOS, range, shot delay) for diagnosing chase-but-no-fire behavior.
+
 ### Version 1.5.5 (NeoForge / Minecraft 1.21.1)
 
 - **Build:** NeoForge Gradle picks up local Create:Gunsmithing jars named **`create-gunsmithing-*.jar`** as well as **`cgs-*.jar`** / **`cgs*.jar`** from `common/libs/` (artifact rename no longer skips the local jar).

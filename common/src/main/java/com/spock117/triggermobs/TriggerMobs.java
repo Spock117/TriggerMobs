@@ -22,6 +22,11 @@ public class TriggerMobs {
     public static boolean includeLootAttachments = true;
     public static boolean includeLootAmmo = true;
 
+    /** When true, logs why gun AI does not shoot (chases / no fire). Set from Forge config. */
+    public static boolean debugGunAi = false;
+    /** When true, logs CGS spawn ammo/fuel prep. Set from Forge config. */
+    public static boolean debugGunSpawn = false;
+
     public static void init() {
         LOGGER.info("TriggerMobs mod initialized");
     }

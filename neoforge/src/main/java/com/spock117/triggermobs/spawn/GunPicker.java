@@ -3,11 +3,15 @@ package com.spock117.triggermobs.spawn;
 import com.nukateam.ntgl.common.data.WeaponData;
 import com.nukateam.ntgl.common.data.config.weapon.Modules;
 import com.nukateam.ntgl.common.data.attachment.IAttachment;
+import com.nukateam.ntgl.common.data.holders.AmmoHolder;
 import com.nukateam.ntgl.common.data.holders.AttachmentType;
+import com.nukateam.ntgl.common.foundation.init.NtglComponents;
 import com.nukateam.ntgl.common.foundation.item.interfaces.IWeapon;
+import com.nukateam.ntgl.common.util.util.FuelUtils;
 import com.nukateam.ntgl.common.util.util.WeaponModifierHelper;
 import com.nukateam.ntgl.common.util.util.WeaponStateHelper;
 import com.spock117.triggermobs.config.TriggerMobsConfig;
+import com.spock117.triggermobs.util.GunAiDebug;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -25,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Picks and assigns Create:Gunsmithing (CGS) weapons to mobs on spawn.
@@ -39,7 +42,7 @@ public class GunPicker {
 
     // Basic one-handed weapons
     private static final String[] BASIC_WEAPONS = {"flintlock", "revolver", "shotgun"};
-    // Advanced weapons (two-handed except shotgun). Nailgun excluded: requires Create fuel. Blazegun excluded: not usable by mobs.
+    // Advanced weapons (two-handed except shotgun). Nailgun/blazegun omitted here (Create fuel); use mobWeaponOverrides.
     private static final String[] ADVANCED_WEAPONS = {"gatling", "launcher", "hammer"};
 
     private static final String TAG_CHECKED = "triggermobs_cgs_checked";
@@ -184,7 +187,13 @@ public class GunPicker {
         if (!mainHand.isEmpty() && mainHand.getItem() instanceof IWeapon) {
             ResourceLocation id = BuiltInRegistries.ITEM.getKey(mainHand.getItem());
             if (id != null && CGS_NAMESPACE.equals(id.getNamespace())) {
+                // Already holding CGS — still prep ammo/fuel so loot/datapack guns can fire
+                prepareMobWeapon(mainHand, mob);
+                if (!mob.getOffhandItem().isEmpty() && isCgsWeaponStack(mob.getOffhandItem())) {
+                    prepareMobWeapon(mob.getOffhandItem(), mob);
+                }
                 markApplied(mob);
+                GunAiDebug.logSpawn(mob, mainHand, "already_holding");
                 return true;
             }
         }
@@ -196,8 +205,7 @@ public class GunPicker {
 
         ItemStack weaponStack = new ItemStack(weaponItem);
         applyRandomAttachments(weaponStack, mob);
-        setInfiniteAmmo(weaponStack);
-        WeaponStateHelper.fillAmmo(new WeaponData(weaponStack, mob));
+        prepareMobWeapon(weaponStack, mob);
 
         double dropChance = TriggerMobsConfig.COMMON.dropChanceOverride.get();
         boolean isOneHanded = WeaponModifierHelper.isOneHanded(new WeaponData(weaponStack, mob));
@@ -206,8 +214,7 @@ public class GunPicker {
         if (isOneHanded && mob.getRandom().nextDouble() < TriggerMobsConfig.COMMON.dualWieldChance.get()) {
             ItemStack secondStack = new ItemStack(weaponItem);
             applyRandomAttachments(secondStack, mob);
-            setInfiniteAmmo(secondStack);
-            WeaponStateHelper.fillAmmo(new WeaponData(secondStack, mob));
+            prepareMobWeapon(secondStack, mob);
 
             mob.setItemInHand(InteractionHand.MAIN_HAND, weaponStack);
             mob.setItemInHand(InteractionHand.OFF_HAND, secondStack);
@@ -227,9 +234,24 @@ public class GunPicker {
         ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
         String mobId = key != null ? key.toString() : "";
         List<String> pool = getWeaponPoolForMob(mobId);
-        if (pool.isEmpty()) return null;
-        String chosen = pool.get(mob.getRandom().nextInt(pool.size()));
-        return BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(chosen));
+        if (pool.isEmpty()) {
+            return null;
+        }
+        List<Item> candidates = new ArrayList<>();
+        for (String entry : pool) {
+            ResourceLocation weaponId = ResourceLocation.tryParse(entry);
+            if (weaponId == null) {
+                continue;
+            }
+            Item item = BuiltInRegistries.ITEM.get(weaponId);
+            if (item != null && item != Items.AIR) {
+                candidates.add(item);
+            }
+        }
+        if (candidates.isEmpty()) {
+            return null;
+        }
+        return candidates.get(mob.getRandom().nextInt(candidates.size()));
     }
 
     private static List<String> getWeaponPoolForMob(String mobId) {
@@ -314,8 +336,30 @@ public class GunPicker {
         }
     }
 
+    /**
+     * Marks mob-spawned guns as ignoring magazine depletion and tops up ammo plus Create/CGS fuel tanks.
+     */
+    private static void prepareMobWeapon(ItemStack weaponStack, PathfinderMob mob) {
+        setInfiniteAmmo(weaponStack);
+        WeaponData data = new WeaponData(weaponStack, mob);
+        WeaponStateHelper.fillAmmo(data);
+        seedMobFuels(data);
+        GunAiDebug.logSpawn(mob, weaponStack, "prepared");
+    }
+
     private static void setInfiniteAmmo(ItemStack weaponStack) {
-        // TODO: migrate IgnoreAmmo behavior to NTGL 1.21.1 data components.
+        weaponStack.set(NtglComponents.IGNORE_AMMO, true);
+    }
+
+    /** Fill every fuel slot to max so NTGL/CGS mandatory-fuel checks pass for mob shooters. */
+    private static void seedMobFuels(WeaponData data) {
+        for (AmmoHolder fuelType : WeaponModifierHelper.getAllFuel(data)) {
+            int max = WeaponModifierHelper.getMaxFuel(fuelType.getId(), data);
+            int current = FuelUtils.getFuel(data.weapon, fuelType);
+            if (current < max) {
+                FuelUtils.addFuel(data, fuelType, max - current);
+            }
+        }
     }
 
     private static <T> void shuffleList(List<T> list, RandomSource random) {

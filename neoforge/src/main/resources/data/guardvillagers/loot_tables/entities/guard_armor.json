@@ -37,18 +37,7 @@
         "name": "cgs:shotgun",
         "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:16}" }]
       }],
-      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.066 }],
-      "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
-    },
-    {
-      "name": "cgs_nailgun",
-      "rolls": 1,
-      "entries": [{
-        "type": "minecraft:item",
-        "name": "cgs:nailgun",
-        "functions": [{ "function": "minecraft:set_nbt", "tag": "{AmmoCount:80}" }]
-      }],
-      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.03 }],
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.096 }],
       "functions": [{ "function": "guardvillagers:slot", "slot": "mainhand" }]
     },
     {

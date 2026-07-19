@@ -43,6 +43,10 @@ public class TriggerMobsConfig {
         public final ModConfigSpec.BooleanValue includeLootGuns;
         public final ModConfigSpec.BooleanValue includeLootAttachments;
         public final ModConfigSpec.BooleanValue includeLootAmmo;
+
+        // Debug (leave off for normal play; spammy in logs)
+        public final ModConfigSpec.BooleanValue debugGunAi;
+        public final ModConfigSpec.BooleanValue debugGunSpawn;
         
         public Common(ModConfigSpec.Builder builder) {
             builder.comment("TriggerMobs mob attack configuration").push("mob_attack");
@@ -100,11 +104,11 @@ public class TriggerMobsConfig {
                 .defineInRange("maxAttachmentSlots", 2, 0, 5);
 
             this.allowAdvancedWeapons = builder
-                .comment("Allow heavy weapons (Gatling, Launcher) or restrict to pistols/shotguns. Used when no mob override matches. Blazegun excluded: not usable by mobs.")
+                .comment("Allow heavy weapons (Gatling, Launcher, Hammer) in the default spawn pool. Nailgun and Blazegun are omitted from automatic pools and loot (Create fuel); add them via mobWeaponOverrides to spawn with fuel seeded.")
                 .define("allowAdvancedWeapons", true);
 
             this.mobWeaponOverrides = builder
-                .comment("Per-mob weapon assignment. Format: mob_id=gun1 or mob_id=gun1,gun2,gun3 (comma = pick random). Example: minecraft:zombie=cgs:flintlock. Includes guardvillagers:guard when guard CGS spawning is enabled.")
+                .comment("Per-mob weapon assignment. Format: mob_id=gun1 or mob_id=gun1,gun2,gun3 (comma = pick random). Example: minecraft:zombie=cgs:flintlock. Nailgun/blazegun may be listed here; spawn fuel tanks are filled automatically. Includes guardvillagers:guard when guard CGS spawning is enabled.")
                 .defineList("mobWeaponOverrides", defaultMobWeaponOverrides(), s -> s instanceof String && ((String) s).contains("="));
 
             this.guardCgsSpawningEnabled = builder
@@ -142,6 +146,18 @@ public class TriggerMobsConfig {
             this.includeLootAmmo = builder
                 .comment("Include ammo items (e.g., NTGL rounds, shotshells, arrows) in Loot Integrations chest loot.")
                 .define("includeLootAmmo", true);
+
+            builder.pop();
+
+            builder.comment("Debug logging (writes to latest.log; leave false unless diagnosing issues)").push("debug");
+
+            this.debugGunAi = builder
+                .comment("Log why a mob with a gun chases but does not fire (ammo, reload, range, LOS, attack delay, fuel). Throttled ~every 2s per mob. Look for [TM-ai] lines.")
+                .define("debugGunAi", false);
+
+            this.debugGunSpawn = builder
+                .comment("Log CGS weapon spawn prep (ammo count, ignore_ammo, fuel tanks). Look for [TM-spawn] lines.")
+                .define("debugGunSpawn", false);
 
             builder.pop();
         }

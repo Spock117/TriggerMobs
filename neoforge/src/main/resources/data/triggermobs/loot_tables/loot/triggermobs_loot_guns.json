@@ -9,12 +9,10 @@
       "entries": [
         { "type": "minecraft:item", "name": "cgs:flintlock", "weight": 6 },
         { "type": "minecraft:item", "name": "cgs:revolver", "weight": 6 },
-        { "type": "minecraft:item", "name": "cgs:shotgun", "weight": 4 },
-        { "type": "minecraft:item", "name": "cgs:nailgun", "weight": 4 },
+        { "type": "minecraft:item", "name": "cgs:shotgun", "weight": 5 },
         { "type": "minecraft:item", "name": "cgs:gatling", "weight": 2 },
         { "type": "minecraft:item", "name": "cgs:launcher", "weight": 2 },
         { "type": "minecraft:item", "name": "cgs:hammer", "weight": 2 },
-        { "type": "minecraft:item", "name": "cgs:blazegun", "weight": 1 },
         { "type": "minecraft:item", "name": "cgs:frag_grenade", "weight": 1 }
       ]
     }
